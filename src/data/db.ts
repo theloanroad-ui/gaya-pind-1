@@ -4,13 +4,20 @@ import { Article, CategoryInfo } from '@/types';
 import { ARTICLES } from './articles';
 import { siteConfig } from './siteConfig';
 import { CATEGORIES } from './categories';
+import { stripArticleForSummary } from '@/lib/articleSummary';
 
 const ARTICLES_FILE = path.join(process.cwd(), 'src/data/articles.json');
 const CONFIG_FILE = path.join(process.cwd(), 'src/data/siteConfig.json');
 const CATEGORIES_FILE = path.join(process.cwd(), 'src/data/categories.json');
 
+let cachedArticlesMtime = -1;
+let cachedArticlesData: Article[] | null = null;
+let cachedSummaryData: Article[] | null = null;
+let dbInitialized = false;
+
 // Helper to initialize JSON files if they don't exist
 function initDB() {
+  if (dbInitialized) return;
   try {
     const dataDir = path.join(process.cwd(), 'src/data');
     if (!fs.existsSync(dataDir)) {
@@ -45,20 +52,29 @@ function initDB() {
       });
       fs.writeFileSync(CATEGORIES_FILE, JSON.stringify(initialCategories, null, 2), 'utf-8');
     }
+    dbInitialized = true;
   } catch (e) {
     console.error('Failed to initialize database files', e);
   }
 }
 
-// Ensure database files are initialized
+// Ensure database files are initialized once
 initDB();
 
 export function getArticles(): Article[] {
   try {
     initDB();
     if (fs.existsSync(ARTICLES_FILE)) {
+      const stat = fs.statSync(ARTICLES_FILE);
+      if (cachedArticlesData && stat.mtimeMs === cachedArticlesMtime) {
+        return cachedArticlesData;
+      }
       const data = fs.readFileSync(ARTICLES_FILE, 'utf-8');
-      return JSON.parse(data);
+      const parsed: Article[] = JSON.parse(data);
+      cachedArticlesMtime = stat.mtimeMs;
+      cachedArticlesData = parsed;
+      cachedSummaryData = parsed.map(stripArticleForSummary);
+      return parsed;
     }
   } catch (e) {
     console.error('Error reading articles.json', e);
@@ -66,10 +82,22 @@ export function getArticles(): Article[] {
   return ARTICLES;
 }
 
+export function getArticleSummaries(): Article[] {
+  const full = getArticles();
+  if (cachedSummaryData && cachedArticlesData === full) {
+    return cachedSummaryData;
+  }
+  cachedSummaryData = full.map(stripArticleForSummary);
+  return cachedSummaryData;
+}
+
 export function saveArticles(articles: Article[]): boolean {
   try {
     initDB();
     fs.writeFileSync(ARTICLES_FILE, JSON.stringify(articles, null, 2), 'utf-8');
+    cachedArticlesData = articles;
+    cachedSummaryData = articles.map(stripArticleForSummary);
+    cachedArticlesMtime = fs.statSync(ARTICLES_FILE).mtimeMs;
     return true;
   } catch (e) {
     console.error('Error saving articles.json', e);

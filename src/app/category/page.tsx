@@ -1,124 +1,141 @@
-import React, { Suspense } from 'react';
+import React from 'react';
+import Link from 'next/link';
 import { Metadata } from 'next';
-import NewsClient from '@/app/news/NewsClient';
-import { CATEGORY_SEO_DATA } from '@/data/categorySeo';
+import { ChevronRight } from 'lucide-react';
+import { CATEGORIES } from '@/data/categories';
+import { getArticles, getSiteConfig } from '@/data/db';
+import { getArticlesFromDB } from '@/lib/supabaseService';
+import { getSiteBaseUrl } from '@/lib/articlePageHelpers';
+import { SectionTitle } from '@/components/newsflash/NewsFlashPrimitives';
 
-const seo = CATEGORY_SEO_DATA.all;
+export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: {
-    absolute: seo.metaTitle,
-  },
-  description: seo.metaDescription,
-  keywords: seo.keywords,
-  alternates: {
-    canonical: 'https://www.apexchief.com/category',
-  },
-  openGraph: {
-    title: seo.metaTitle,
-    description: seo.metaDescription,
-    url: 'https://www.apexchief.com/category',
-    siteName: 'ApexChief',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: seo.metaTitle,
-    description: seo.metaDescription,
-  },
-};
+function normalizeCatKey(value?: string): string {
+  return (value || '').replace(/[-\s_]/g, '').toLowerCase();
+}
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'CollectionPage',
-      '@id': 'https://www.apexchief.com/category#collection',
-      url: 'https://www.apexchief.com/category',
-      name: seo.h1,
-      description: seo.metaDescription,
-      isPartOf: {
-        '@type': 'WebSite',
-        '@id': 'https://www.apexchief.com/#website',
-        name: 'ApexChief',
-        url: 'https://www.apexchief.com',
+export function generateMetadata(): Metadata {
+  const siteConfig = getSiteConfig();
+  const baseUrl = getSiteBaseUrl();
+  const canonicalUrl = `${baseUrl}/category`;
+
+  return {
+    title: `Editorial Sections & Categories | ${siteConfig.name}`,
+    description:
+      'Browse all Entrepreneur Mirror journalism sections: Business, Technology, World News, Executive Interviews, Opinion, Lifestyle, Health, Crypto, Metaverse, Real Estate, and more.',
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title: `Editorial Sections & Categories | ${siteConfig.name}`,
+      description: 'Complete directory of Entrepreneur Mirror editorial desks and reporting beats.',
+      url: canonicalUrl,
+      siteName: siteConfig.name,
+      type: 'website',
+    },
+  };
+}
+
+export default async function CategoriesIndexPage() {
+  const siteConfig = getSiteConfig();
+  const baseUrl = getSiteBaseUrl();
+  const dbArticles = await getArticlesFromDB();
+  const allArticles = dbArticles && dbArticles.length > 0 ? dbArticles : getArticles();
+
+  const categoriesWithCounts = CATEGORIES.map((cat) => {
+    const norm = normalizeCatKey(cat.slug);
+    const matching = allArticles.filter(
+      (a) =>
+        normalizeCatKey(a.category) === norm ||
+        (Array.isArray(a.categories) &&
+          a.categories.some((c) => normalizeCatKey(c) === norm))
+    );
+    return {
+      ...cat,
+      count: matching.length,
+      latestTitle: matching[0]?.title,
+    };
+  });
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        '@id': `${baseUrl}/category#collection`,
+        url: `${baseUrl}/category`,
+        name: `Editorial Categories | ${siteConfig.name}`,
+        isPartOf: {
+          '@type': 'WebSite',
+          '@id': `${baseUrl}/#website`,
+          name: siteConfig.name,
+          url: baseUrl,
+        },
       },
-    },
-    {
-      '@type': 'ItemList',
-      '@id': 'https://www.apexchief.com/category#itemlist',
-      name: 'ApexChief Editorial Categories',
-      numberOfItems: 13,
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Technology', url: 'https://www.apexchief.com/category/technology' },
-        { '@type': 'ListItem', position: 2, name: 'Business', url: 'https://www.apexchief.com/category/business' },
-        { '@type': 'ListItem', position: 3, name: 'Leadership', url: 'https://www.apexchief.com/category/leadership' },
-        { '@type': 'ListItem', position: 4, name: 'Startups', url: 'https://www.apexchief.com/category/startups' },
-        { '@type': 'ListItem', position: 5, name: 'Interview', url: 'https://www.apexchief.com/category/interview' },
-        { '@type': 'ListItem', position: 6, name: 'Top - List', url: 'https://www.apexchief.com/category/top-list' },
-        { '@type': 'ListItem', position: 7, name: 'Real Estate', url: 'https://www.apexchief.com/category/real-estate' },
-        { '@type': 'ListItem', position: 8, name: 'Health', url: 'https://www.apexchief.com/category/health' },
-        { '@type': 'ListItem', position: 9, name: 'Retail', url: 'https://www.apexchief.com/category/retail' },
-        { '@type': 'ListItem', position: 10, name: 'Hospitality', url: 'https://www.apexchief.com/category/hospitality' },
-        { '@type': 'ListItem', position: 11, name: 'Lifestyle', url: 'https://www.apexchief.com/category/lifestyle' },
-        { '@type': 'ListItem', position: 12, name: 'Opinion', url: 'https://www.apexchief.com/category/opinion' },
-        { '@type': 'ListItem', position: 13, name: 'News', url: 'https://www.apexchief.com/category/news' },
-      ],
-    },
-    {
-      '@type': 'BreadcrumbList',
-      '@id': 'https://www.apexchief.com/category#breadcrumb',
-      itemListElement: [
-        {
+      {
+        '@type': 'ItemList',
+        itemListElement: categoriesWithCounts.map((c, idx) => ({
           '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: 'https://www.apexchief.com',
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'Categories',
-          item: 'https://www.apexchief.com/category',
-        },
-      ],
-    },
-  ],
-};
+          position: idx + 1,
+          url: `${baseUrl}/category/${c.slug}`,
+          name: c.name,
+        })),
+      },
+    ],
+  };
 
-export default function CategoryIndexPage() {
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        {/* Category SEO Masthead with H1 Header & Content */}
-        <header className="mb-6 pb-6 border-b border-[#211d1d]/15 dark:border-white/15">
-          <div className="inline-flex items-center space-x-2 bg-[#0a0a0a] dark:bg-white text-[#fefdf3] dark:text-black text-[10px] font-oswald uppercase px-2.5 py-1 tracking-widest font-bold mb-3">
-            <span>ApexChief Editorial Categories</span>
-          </div>
-          <h1 className="font-serif text-3xl sm:text-5xl font-bold text-[#0a0a0a] dark:text-white tracking-tight mb-3">
-            {seo.h1}
+
+      <section className="nf-container py-8 sm:py-12">
+        <header className="mb-10 pb-6 border-b border-[#cbd5e1]/45 flex flex-col items-start gap-3">
+          <SectionTitle title="Section Directory" highlight />
+          <h1 className="nf-font-display text-[32px] sm:text-[42px] font-bold leading-[1.14] tracking-[-0.025em] text-[#020a1c]">
+            All Editorial Sections
           </h1>
-          <p className="font-sans text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed max-w-4xl">
-            {seo.introContent}
+          <p className="text-[15px] sm:text-[16px] leading-[1.6] text-[#657285] max-w-3xl">
+            Navigate every desk across Entrepreneur Mirror — from executive interviews and venture intelligence to world dispatches, health, crypto, and lifestyle.
           </p>
         </header>
 
-        <Suspense
-          fallback={
-            <div className="py-16 text-center">
-              <div className="font-serif text-lg font-bold text-[#0a0a0a] dark:text-white">
-                Loading Categories...
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categoriesWithCounts.map((cat) => (
+            <Link
+              key={cat.slug}
+              href={`/category/${cat.slug}`}
+              className="group p-6 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/50 hover:border-[#cc0000]/45 hover:bg-white transition-all flex flex-col justify-between gap-4 no-underline"
+            >
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="nf-badge-red">{cat.name}</span>
+                  <span className="text-[12px] font-medium text-[#657285]">
+                    {cat.count} {cat.count === 1 ? 'story' : 'stories'}
+                  </span>
+                </div>
+
+                {cat.description && (
+                  <p className="text-[14px] leading-[1.55] text-[#657285] line-clamp-2">
+                    {cat.description}
+                  </p>
+                )}
+
+                {cat.latestTitle && (
+                  <p className="text-[13px] font-medium text-[#020a1c] line-clamp-2 pt-2 border-t border-[#cbd5e1]/35">
+                    Latest: {cat.latestTitle}
+                  </p>
+                )}
               </div>
-            </div>
-          }
-        >
-          <NewsClient defaultCategory="all" />
-        </Suspense>
-      </div>
+
+              <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#020a1c] group-hover:text-[#cc0000] transition-colors">
+                <span>Browse {cat.name}</span>
+                <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

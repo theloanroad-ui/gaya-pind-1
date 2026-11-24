@@ -12,7 +12,7 @@ export default function MainWrapper({ children }: { children: React.ReactNode })
   }
 
   return (
-    <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main className="flex-1 w-full pt-[104px] flex flex-col">
       {children}
     </main>
   );

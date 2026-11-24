@@ -1,35 +1,32 @@
 import React from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Shield, Lock, Eye, FileText, Globe, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { Metadata } from 'next';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { SectionTitle } from '@/components/newsflash/NewsFlashPrimitives';
+import { getSiteBaseUrl } from '@/lib/articlePageHelpers';
+
+const baseUrl = getSiteBaseUrl();
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description: 'Learn how ApexChief collects, protects, and handles your personal information with uncompromising journalistic standards and privacy security.',
-  alternates: {
-    canonical: 'https://www.apexchief.com/privacy',
-  },
+  title: 'Privacy Policy | Entrepreneur Mirror',
+  description:
+    'Learn how Entrepreneur Mirror collects, protects, and handles reader data with transparent journalistic privacy standards.',
+  alternates: { canonical: `${baseUrl}/privacy` },
   openGraph: {
-    title: 'Privacy Policy | ApexChief',
-    description: 'Learn how ApexChief collects, protects, and handles your personal information with uncompromising journalistic standards and privacy security.',
-    url: 'https://www.apexchief.com/privacy',
-    siteName: 'ApexChief',
+    title: 'Privacy Policy | Entrepreneur Mirror',
+    description:
+      'Learn how Entrepreneur Mirror protects reader privacy and data governance.',
+    url: `${baseUrl}/privacy`,
+    siteName: 'Entrepreneur Mirror',
     type: 'website',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'Privacy Policy | ApexChief',
-    description: 'Learn how ApexChief collects, protects, and handles your personal information with uncompromising journalistic standards and privacy security.',
   },
 };
 
 export default function PrivacyPolicyPage() {
-  const lastUpdated = 'September 2026';
+  const lastUpdated = 'November 2026';
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-4">
-      {/* Top Breadcrumb */}
+    <div className="nf-container max-w-4xl py-6 sm:py-10">
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },
@@ -38,122 +35,72 @@ export default function PrivacyPolicyPage() {
         showBackLink
         backHref="/"
         backLabel="Front Page"
-        rightBadge="Editorial Governance"
+        rightBadge="Governance"
       />
 
-      {/* Header */}
-      <div className="mb-10 pb-8 border-b border-[#211d1d]/15 dark:border-white/15">
-        <div className="inline-flex items-center space-x-2 bg-[#0a0a0a] dark:bg-white text-[#fefdf3] dark:text-black text-[10px] font-oswald uppercase px-2.5 py-1 tracking-widest font-bold mb-3">
-          <Shield className="w-3 h-3 text-[#f7413e]" />
-          <span>Legal & Transparency</span>
-        </div>
-        <h1 className="font-serif text-3xl sm:text-5xl font-bold text-[#0a0a0a] dark:text-white tracking-tight mb-3">
-          ApexChief Privacy Policy
+      <header className="mb-10 pb-6 border-b border-[#cbd5e1]/45 flex flex-col items-start gap-3">
+        <SectionTitle title="Legal & Privacy" highlight />
+        <h1 className="nf-font-display text-[32px] sm:text-[42px] font-bold leading-[1.14] tracking-[-0.025em] text-[#020a1c]">
+          Entrepreneur Mirror Privacy Policy
         </h1>
-        <p className="font-mono text-xs text-[#575757] dark:text-[#a3a3a3]">
-          Effective Date &amp; Last Revised: <span className="font-semibold text-[#0a0a0a] dark:text-white">{lastUpdated}</span> • Global Compliance
+        <p className="text-[13px] text-[#657285]">
+          Effective Date: <span className="font-medium text-[#020a1c]">{lastUpdated}</span>
         </p>
-      </div>
+      </header>
 
-      {/* Main Legal Content */}
-      <div className="prose prose-lg dark:prose-invert max-w-none font-serif text-[#211d1d] dark:text-[#eff0e0] leading-relaxed space-y-8">
-        <section className="space-y-3">
-          <h2 className="font-oswald text-xl sm:text-2xl font-bold uppercase tracking-wide text-[#0a0a0a] dark:text-white flex items-center gap-2">
-            <span className="text-[#f7413e]">01.</span> Commitment to Reader Privacy
-          </h2>
-          <p className="text-sm sm:text-base font-sans text-[#404040] dark:text-[#cccccc] leading-relaxed">
-            ApexChief (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) is an independent digital publication committed to delivering authoritative business, technology, leadership, and market intelligence. We operate with strict adherence to privacy-first journalistic standards. This Privacy Policy details how we collect, safeguard, and utilize data when you visit <strong>apexchief.com</strong> or engage with our editorial dispatches, newsletters, and digital services.
+      <div className="nf-article-body space-y-8">
+        <section>
+          <h2>01. Commitment to Reader Privacy</h2>
+          <p>
+            Entrepreneur Mirror (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) is an independent business and innovation publication committed to privacy-first digital journalism. This policy describes how information is handled when you visit <strong>entrepreneurmirror.com</strong> or interact with our editorial dispatches.
           </p>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-oswald text-xl sm:text-2xl font-bold uppercase tracking-wide text-[#0a0a0a] dark:text-white flex items-center gap-2">
-            <span className="text-[#f7413e]">02.</span> Information We Collect
-          </h2>
-          <p className="text-sm sm:text-base font-sans text-[#404040] dark:text-[#cccccc] leading-relaxed">
-            We collect minimal information necessary to deliver high-quality editorial content, security, and platform reliability:
+        <section>
+          <h2>02. Information We Collect</h2>
+          <p>
+            We collect minimal information necessary to maintain reliable publishing operations:
           </p>
-          <ul className="list-disc pl-5 space-y-2 font-sans text-xs sm:text-sm text-[#404040] dark:text-[#cccccc]">
+          <ul className="list-disc">
             <li>
-              <strong>Directly Provided Information:</strong> When you subscribe to our weekly editorial briefing or submit an inquiry through our contact desk, we collect your name, email address, organization, and message contents.
+              <strong>Directly Provided Information:</strong> Email addresses or pitch submissions you voluntarily enter in contact forms or newsletter sign-up boxes.
             </li>
             <li>
-              <strong>Aggregated Readership Metrics:</strong> To improve our reporting, we record non-personally identifiable metrics such as article view counts, approximate geographic region (country/city level), browser type, device category, and referring websites.
+              <strong>Aggregated Readership Analytics:</strong> Non-personally identifiable metrics such as story views and technical browser compatibility signals.
             </li>
             <li>
-              <strong>Zero Sensitive Data:</strong> ApexChief does not solicit, capture, or store sensitive financial instruments, biometric identifiers, or government identity documents from readers.
+              <strong>Zero Sensitive Financial Capture:</strong> Entrepreneur Mirror does not solicit sensitive payment or government identity documents from general readers.
             </li>
           </ul>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-oswald text-xl sm:text-2xl font-bold uppercase tracking-wide text-[#0a0a0a] dark:text-white flex items-center gap-2">
-            <span className="text-[#f7413e]">03.</span> Cookies &amp; Tracking Technologies
-          </h2>
-          <p className="text-sm sm:text-base font-sans text-[#404040] dark:text-[#cccccc] leading-relaxed">
-            Our platform uses strictly necessary and performance cookies:
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans text-xs">
-            <div className="p-4 bg-[#faf8f2] dark:bg-[#1a1d26] border border-[#211d1d]/15 dark:border-white/10">
-              <span className="font-bold text-[#f7413e] uppercase font-mono block mb-1">Essential Cookies</span>
-              <p className="text-[#575757] dark:text-gray-300">
-                Preserve user interface preferences such as dark/light theme toggle, font rendering, and secure authentication state for editorial staff.
-              </p>
-            </div>
-            <div className="p-4 bg-[#faf8f2] dark:bg-[#1a1d26] border border-[#211d1d]/15 dark:border-white/10">
-              <span className="font-bold text-[#f7413e] uppercase font-mono block mb-1">Analytics Cookies</span>
-              <p className="text-[#575757] dark:text-gray-300">
-                Help our editorial leadership understand aggregate engagement trends, popular investigation topics, and reading session times.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-3">
-          <h2 className="font-oswald text-xl sm:text-2xl font-bold uppercase tracking-wide text-[#0a0a0a] dark:text-white flex items-center gap-2">
-            <span className="text-[#f7413e]">04.</span> Zero Sale of Reader Personal Data
-          </h2>
-          <p className="text-sm sm:text-base font-sans text-[#404040] dark:text-[#cccccc] leading-relaxed">
-            <strong>ApexChief will never sell, rent, or trade your personal information or email subscriber records to data brokers, ad networks, or commercial third parties.</strong> Data is shared only with trusted infrastructure service providers (such as secure cloud hosting and transactional email systems) strictly bound by data confidentiality agreements.
+        <section>
+          <h2>03. Zero Sale of Personal Records</h2>
+          <p>
+            <strong>Entrepreneur Mirror will never sell, rent, or trade reader contact details or subscriber lists to commercial brokers or third-party ad networks.</strong>
           </p>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-oswald text-xl sm:text-2xl font-bold uppercase tracking-wide text-[#0a0a0a] dark:text-white flex items-center gap-2">
-            <span className="text-[#f7413e]">05.</span> Reader Rights (GDPR &amp; CCPA Compliance)
-          </h2>
-          <p className="text-sm sm:text-base font-sans text-[#404040] dark:text-[#cccccc] leading-relaxed">
-            Regardless of your geographic jurisdiction, ApexChief accords all readers full sovereignty over their data:
-          </p>
-          <ul className="list-disc pl-5 space-y-1.5 font-sans text-xs sm:text-sm text-[#404040] dark:text-[#cccccc]">
-            <li><strong>Right to Access:</strong> Request a complete record of any personal details associated with your email address.</li>
-            <li><strong>Right to Rectification:</strong> Update or correct your newsletter subscription details at any time.</li>
-            <li><strong>Right to Erasure (&ldquo;Right to be Forgotten&rdquo;):</strong> Request immediate deletion of your contact records and email subscriptions.</li>
-            <li><strong>One-Click Opt-Out:</strong> Unsubscribe from our weekly editorial dispatches with a single click using the link at the bottom of every email.</li>
-          </ul>
-        </section>
-
-        <section className="space-y-3">
-          <h2 className="font-oswald text-xl sm:text-2xl font-bold uppercase tracking-wide text-[#0a0a0a] dark:text-white flex items-center gap-2">
-            <span className="text-[#f7413e]">06.</span> Security &amp; Data Protection
-          </h2>
-          <p className="text-sm sm:text-base font-sans text-[#404040] dark:text-[#cccccc] leading-relaxed">
-            We implement enterprise-grade TLS encryption, continuous vulnerability monitoring, strict access controls, and automated rate limiting to protect all stored information against unauthorized access, disclosure, or alteration.
+        <section>
+          <h2>04. Reader Rights &amp; Data Sovereignty</h2>
+          <p>
+            Readers in all jurisdictions may request access, correction, or deletion of any voluntarily submitted contact records at any time.
           </p>
         </section>
 
-        <section className="p-6 bg-[#faf8f2] dark:bg-[#151922] border-l-4 border-[#f7413e] space-y-2 mt-8">
-          <h3 className="font-oswald text-lg font-bold uppercase tracking-wide text-[#0a0a0a] dark:text-white flex items-center gap-2">
-            <Mail className="w-4 h-4 text-[#f7413e]" />
-            Data Protection &amp; Editorial Grievance Contact
+        <section className="p-6 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/50 border-l-4 border-l-[#cc0000]">
+          <h3 className="flex items-center gap-2 text-[17px] font-bold text-[#020a1c] !mt-0">
+            <Mail className="w-4 h-4 text-[#cc0000]" />
+            <span>Data Governance Contact</span>
           </h3>
-          <p className="text-xs sm:text-sm font-sans text-[#575757] dark:text-gray-300">
-            For inquiries regarding our privacy practices, data deletion requests, or editorial transparency, reach our Data Governance Officer at:
+          <p className="!mb-2 text-[14px]">
+            For privacy questions or data requests, contact our editorial governance desk:
           </p>
-          <p className="font-mono text-xs text-[#0a0a0a] dark:text-white font-semibold">
-            Email: <a href="mailto:sales@apexchief.com" className="text-[#f7413e] underline">sales@apexchief.com</a>
-            <br />
-            Address: ApexChief Media Group, 100 Financial Center Blvd, New York, NY 10005
+          <p className="!mb-0 text-[13px] font-medium text-[#020a1c]">
+            Email:{' '}
+            <a href="mailto:editorial@entrepreneurmirror.com">
+              editorial@entrepreneurmirror.com
+            </a>
           </p>
         </section>
       </div>

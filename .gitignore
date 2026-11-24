@@ -19,8 +19,15 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Local env files
-.env*.local
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Documents & reports
+*.pdf
+*.xlsx
 
 # Temporary / Scratch
 scratch/
+_archive/

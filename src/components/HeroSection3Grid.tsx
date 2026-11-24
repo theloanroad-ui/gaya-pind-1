@@ -574,7 +574,7 @@ export default function HeroSection3Grid({
                     <Trophy className="w-3 h-3" />
                   </span>
                   <span className="text-xs font-mono uppercase tracking-widest text-[#f7413e] font-bold">
-                    ApexChief Editorial Index
+                    Editorial Power Index
                   </span>
                 </div>
                 <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#0a0a0a] dark:text-white">

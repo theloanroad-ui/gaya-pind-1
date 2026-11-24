@@ -34,13 +34,13 @@ export default function Footer({ initialConfig }: { initialConfig?: SiteConfig }
               Global Business, Technology &amp; Leadership News
             </p>
             <p className="text-xs text-neutral-400 leading-relaxed max-w-sm">
-              ApexChief delivers executive interviews, startup innovations, emerging tech breakthroughs, and market intelligence for modern leaders and entrepreneurs.
+              {site.name} delivers executive interviews, business insights, emerging tech breakthroughs, and market intelligence for modern leaders and entrepreneurs.
             </p>
 
             <div className="pt-2 space-y-2 text-sm text-neutral-400">
               <div>
                 <a
-                  href={`mailto:${site.contact?.email || 'sales@apexchief.com'}`}
+                  href={`mailto:${site.contact?.email || 'info@entrepreneurmirror.com'}`}
                   className="inline-flex items-center gap-2 hover:text-white transition-colors"
                 >
                   <Mail className="w-4 h-4 text-[#f7413e] shrink-0" />
@@ -59,42 +59,57 @@ export default function Footer({ initialConfig }: { initialConfig?: SiteConfig }
           {/* Column 2: Popular Categories */}
           <div className="space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-white">
-              Categories
+              Editorial Categories
             </h3>
-            <ul className="space-y-2.5 text-sm text-neutral-400">
-              <li>
-                <Link href="/category/technology" className="hover:text-white transition-colors">
-                  Technology
-                </Link>
-              </li>
+            <ul className="space-y-2 text-sm text-neutral-400">
               <li>
                 <Link href="/category/business" className="hover:text-white transition-colors">
                   Business
                 </Link>
               </li>
               <li>
-                <Link href="/category/leadership" className="hover:text-white transition-colors">
-                  Leadership
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/startups" className="hover:text-white transition-colors">
-                  Startups
+                <Link href="/category/technology" className="hover:text-white transition-colors">
+                  Technology
                 </Link>
               </li>
               <li>
                 <Link href="/category/interview" className="hover:text-white transition-colors">
-                  Interviews
+                  Interview
                 </Link>
               </li>
               <li>
-                <Link href="/category/opinion" className="hover:text-white transition-colors">
-                  Opinion
+                <Link href="/category/news" className="hover:text-white transition-colors">
+                  News
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/world" className="hover:text-white transition-colors">
+                  World
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/lifestyle" className="hover:text-white transition-colors">
+                  Lifestyle
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/metaverse" className="hover:text-white transition-colors">
+                  Metaverse
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/crypto" className="hover:text-white transition-colors">
+                  Crypto
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/real-estate" className="hover:text-white transition-colors">
+                  Real Estate
                 </Link>
               </li>
               <li>
                 <Link href="/category" className="text-[#f7413e] hover:underline font-medium transition-colors">
-                  All Categories →
+                  All 16 Categories →
                 </Link>
               </li>
             </ul>

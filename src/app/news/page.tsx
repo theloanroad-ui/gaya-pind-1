@@ -1,7 +1,12 @@
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
+import { permanentRedirect } from 'next/navigation';
 import { CATEGORIES, getCategorySlug } from '@/data/categories';
+import { getArticleSummaries, getCategories, getSiteConfig } from '@/data/db';
+import { getSiteBaseUrl } from '@/lib/articlePageHelpers';
 import NewsClient from './NewsClient';
+
+export const dynamic = 'force-dynamic';
 
 interface NewsPageProps {
   searchParams: Promise<{
@@ -13,7 +18,8 @@ interface NewsPageProps {
 
 export async function generateMetadata({ searchParams }: NewsPageProps): Promise<Metadata> {
   const params = await searchParams;
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.apexchief.com';
+  const siteConfig = getSiteConfig();
+  const baseUrl = getSiteBaseUrl();
   const rawCat = params.category?.trim();
   const sub = params.sub?.trim();
 
@@ -24,23 +30,23 @@ export async function generateMetadata({ searchParams }: NewsPageProps): Promise
     );
     const catName = catObj?.name || rawCat.charAt(0).toUpperCase() + rawCat.slice(1);
     const canonicalUrl = sub
-      ? `${baseUrl}/news?category=${slug}&sub=${encodeURIComponent(sub)}`
-      : `${baseUrl}/news?category=${slug}`;
+      ? `${baseUrl}/category/${slug}?sub=${encodeURIComponent(sub)}`
+      : `${baseUrl}/category/${slug}`;
 
-    const title = `${catName} Archive & Executive Stories`;
-    const description = catObj?.description || `Explore latest ${catName} reporting, industry investigations, CEO perspectives, and executive intelligence on ApexChief.`;
+    const title = `${catName} Archive | ${siteConfig.name}`;
+    const description =
+      catObj?.description ||
+      `Explore latest ${catName} reporting, executive interviews, and industry intelligence on ${siteConfig.name}.`;
 
     return {
       title,
       description,
-      alternates: {
-        canonical: canonicalUrl,
-      },
+      alternates: { canonical: canonicalUrl },
       openGraph: {
         title,
         description,
         url: canonicalUrl,
-        siteName: 'ApexChief',
+        siteName: siteConfig.name,
         type: 'website',
       },
       twitter: {
@@ -52,20 +58,19 @@ export async function generateMetadata({ searchParams }: NewsPageProps): Promise
   }
 
   const archiveUrl = `${baseUrl}/news`;
-  const defaultTitle = 'News Archive & Editorial Intelligence';
-  const defaultDescription = 'Explore all investigative journalism, market analysis, technology breakthroughs, exclusive interviews, and executive leadership stories on ApexChief.';
+  const defaultTitle = `Editorial Archive | ${siteConfig.name}`;
+  const defaultDescription =
+    'Explore global journalism, founder interviews, market intelligence, technology coverage, and lifestyle features on Entrepreneur Mirror.';
 
   return {
     title: defaultTitle,
     description: defaultDescription,
-    alternates: {
-      canonical: archiveUrl,
-    },
+    alternates: { canonical: archiveUrl },
     openGraph: {
       title: defaultTitle,
       description: defaultDescription,
       url: archiveUrl,
-      siteName: 'ApexChief',
+      siteName: siteConfig.name,
       type: 'website',
     },
     twitter: {
@@ -76,26 +81,27 @@ export async function generateMetadata({ searchParams }: NewsPageProps): Promise
   };
 }
 
-import { redirect, permanentRedirect } from 'next/navigation';
-
 export default async function NewsPage({ searchParams }: NewsPageProps) {
   const params = await searchParams;
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.apexchief.com';
+  const siteConfig = getSiteConfig();
+  const baseUrl = getSiteBaseUrl();
   const rawCat = params.category?.trim();
   const sub = params.sub?.trim();
 
-  // 301 Permanent Redirection if user/bot visits /news?category=...
   if (params.category !== undefined) {
     if (!rawCat || rawCat.toLowerCase() === 'all') {
       permanentRedirect('/category');
     }
     const cleanSlug = getCategorySlug(rawCat);
-    permanentRedirect(sub ? `/category/${cleanSlug}?sub=${encodeURIComponent(sub)}` : `/category/${cleanSlug}`);
+    permanentRedirect(
+      sub ? `/category/${cleanSlug}?sub=${encodeURIComponent(sub)}` : `/category/${cleanSlug}`
+    );
   }
 
-  let pageTitle = 'News Archive & Editorial Intelligence | ApexChief';
-  let pageDescription = 'Explore all investigative journalism, market analysis, technology breakthroughs, exclusive interviews, and executive leadership stories on ApexChief.';
-  let pageUrl = `${baseUrl}/news`;
+  const pageTitle = `Editorial Archive | ${siteConfig.name}`;
+  const pageDescription =
+    'Explore global journalism, founder interviews, market intelligence, technology coverage, and lifestyle features on Entrepreneur Mirror.';
+  const pageUrl = `${baseUrl}/news`;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -109,7 +115,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
         isPartOf: {
           '@type': 'WebSite',
           '@id': `${baseUrl}/#website`,
-          name: 'ApexChief',
+          name: siteConfig.name,
           url: baseUrl,
         },
       },
@@ -117,28 +123,8 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
         '@type': 'BreadcrumbList',
         '@id': `${pageUrl}#breadcrumb`,
         itemListElement: [
-          {
-            '@type': 'ListItem',
-            position: 1,
-            name: 'Home',
-            item: baseUrl,
-          },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: 'News Archive',
-            item: `${baseUrl}/news`,
-          },
-          ...(rawCat && rawCat.toLowerCase() !== 'all'
-            ? [
-                {
-                  '@type': 'ListItem',
-                  position: 3,
-                  name: rawCat,
-                  item: pageUrl,
-                },
-              ]
-            : []),
+          { '@type': 'ListItem', position: 1, name: 'Home', item: baseUrl },
+          { '@type': 'ListItem', position: 2, name: 'Archive', item: pageUrl },
         ],
       },
     ],
@@ -152,17 +138,20 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
       />
       <Suspense
         fallback={
-          <div className="py-16 text-center">
-            <div className="font-serif text-lg font-bold text-[#0a0a0a] dark:text-white">
-              Loading ApexChief Newsroom Archive...
+          <div className="nf-container py-16 text-center">
+            <div className="text-[18px] font-bold text-[#020a1c]">
+              Loading {siteConfig.name} Newsroom Archive...
             </div>
-            <p className="text-xs font-mono text-gray-500 mt-2">
+            <p className="text-[13px] text-[#657285] mt-2">
               Fetching editorial intelligence &amp; dispatches...
             </p>
           </div>
         }
       >
-        <NewsClient />
+        <NewsClient
+          initialArticles={getArticleSummaries()}
+          initialCategories={getCategories()}
+        />
       </Suspense>
     </>
   );

@@ -1,644 +1,494 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { ARTICLES } from '@/data/articles';
-import { CATEGORIES } from '@/data/categories';
-import { Article, Category } from '@/types';
-import ArticleCard from '@/components/ArticleCard';
-import {
-  Search,
-  Newspaper,
-  Layers,
-  SlidersHorizontal,
-  X,
-  Check,
-  RotateCcw,
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-
-// Category resolution helper with robust slug aliases
-const resolveCategoryAndSub = (catParam: string, subParam: string | null) => {
-  const norm = (catParam || '').toLowerCase().trim();
-  const normSub = (subParam || '').toLowerCase().trim();
-
-  // Backward-compat aliases & clean slug normalization
-  if (norm === 'ai' || norm === 'artificial-intelligence') {
-    return { category: 'technology', sub: 'ai', region: null };
-  }
-  if (norm === 'real-estate' || norm === 'realestate' || norm === 'realstate' || norm === 'real-state') {
-    return { category: 'real-estate', sub: normSub || null, region: null };
-  }
-  if (norm === 'startup' || norm === 'startups' || norm === 'start-up') {
-    return { category: 'startups', sub: normSub || null, region: null };
-  }
-  if (norm === 'top-list' || norm === 'top10' || norm === 'top-10' || norm === 'top - list') {
-    return { category: 'top-list', sub: normSub || null, region: null };
-  }
-  if (norm === 'medical' || norm === 'bard-powerport-lawsuit') {
-    return { category: 'health', sub: normSub || 'healthtech', region: null };
-  }
-  if (norm === 'innovation') {
-    return { category: 'technology', sub: 'innovation', region: null };
-  }
-  if (norm === 'uae') {
-    return { category: 'all', sub: null, region: 'UAE' };
-  }
-  if (norm === 'mena') {
-    return { category: 'all', sub: null, region: 'MENA' };
-  }
-
-  return { category: norm || 'all', sub: normSub || null, region: null };
-};
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { Search, Filter, X, ChevronDown, ArrowRight } from 'lucide-react';
+import { Article, Category } from '@/types';
+import { CATEGORIES as INITIAL_CATEGORIES } from '@/data/categories';
+import { getBlogUrl } from '@/lib/blogUrl';
+import {
+  SectionTitle,
+  MetaDotDate,
+  NewsFlashImg,
+  PhotoBelowCard,
+  normalizeCatName,
+} from '@/components/newsflash/NewsFlashPrimitives';
 
 interface NewsClientProps {
-  defaultCategory?: string;
+  initialCategory?: string;
+  initialArticles?: Article[];
+  initialCategories?: Category[];
 }
 
-export default function NewsClient({ defaultCategory }: NewsClientProps = {}) {
+function normalizeKey(value?: string): string {
+  return (value || '').toLowerCase().trim().replace(/[-\s_]/g, '');
+}
+
+function articleMatchesCategory(article: Article, targetNorm: string): boolean {
+  if (!targetNorm || targetNorm === 'all') return true;
+  if (normalizeKey(article.category) === targetNorm) return true;
+  if (
+    Array.isArray(article.categories) &&
+    article.categories.some((c) => normalizeKey(c) === targetNorm)
+  ) {
+    return true;
+  }
+  if (
+    targetNorm === 'interview' &&
+    (article.placement === 'interview' ||
+      article.tag?.toLowerCase().includes('interview') ||
+      article.title?.toLowerCase().startsWith('interview:'))
+  ) {
+    return true;
+  }
+  if (
+    (targetNorm === 'realestate' || targetNorm === 'realstate') &&
+    article.tag?.toLowerCase().includes('real estate')
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export default function NewsClient({
+  initialCategory,
+  initialArticles,
+  initialCategories,
+}: NewsClientProps = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
 
-  const rawCategoryParam = defaultCategory || searchParams.get('category') || 'all';
-  const rawSubParam = searchParams.get('sub') || null;
+  const [articles, setArticles] = useState<Article[]>(initialArticles || []);
+  const [categories, setCategories] = useState<Category[]>(initialCategories || INITIAL_CATEGORIES);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const resolved = useMemo(
-    () => resolveCategoryAndSub(rawCategoryParam, rawSubParam),
-    [rawCategoryParam, rawSubParam]
+  const initialNorm = useMemo(
+    () => (initialCategory ? initialCategory.toLowerCase().trim() : 'all'),
+    [initialCategory]
   );
 
-  const [activeCategory, setActiveCategory] = useState(resolved.category);
-  const [activeSub, setActiveSub] = useState<string | null>(resolved.sub);
-  const [activeRegion, setActiveRegion] = useState<string | null>(resolved.region);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'newest' | 'title'>('newest');
-  const [displayCount, setDisplayCount] = useState(12);
-  const [articles, setArticles] = useState<Article[]>(ARTICLES);
-  const [categories, setCategories] = useState<Category[]>(CATEGORIES);
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const resolveStateFromUrl = useCallback(() => {
+    const paramCat = searchParams.get('category');
+    const paramSub = searchParams.get('sub');
+    const pathCatMatch = pathname?.match(/^\/category\/([^/?#]+)/i);
 
-  // Sync state if url param changes
+    let activeCategory = initialNorm;
+    if (paramCat) {
+      activeCategory = paramCat;
+    } else if (pathCatMatch?.[1]) {
+      activeCategory = decodeURIComponent(pathCatMatch[1]);
+    } else if (!pathname?.startsWith('/category/') && !initialCategory) {
+      activeCategory = 'all';
+    }
+
+    return {
+      category: activeCategory,
+      sub: paramSub,
+    };
+  }, [searchParams, pathname, initialCategory, initialNorm]);
+
+  const initialResolved = resolveStateFromUrl();
+  const [activeCategory, setActiveCategory] = useState<string>(initialResolved.category);
+  const [activeSub, setActiveSub] = useState<string | null>(initialResolved.sub);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    const res = resolveCategoryAndSub(
-      defaultCategory || searchParams.get('category') || 'all',
-      searchParams.get('sub') || null
-    );
+    const res = resolveStateFromUrl();
     setActiveCategory(res.category);
     setActiveSub(res.sub);
-    setActiveRegion(res.region);
+    setVisibleCount(12);
 
-    const catName = categories.find((c) => c.slug === res.category)?.name;
+    const normResCat = normalizeKey(res.category);
+    const catName = categories.find(
+      (c) => normalizeKey(c.slug) === normResCat || normalizeKey(c.name) === normResCat
+    )?.name;
+
     if (res.category && res.category !== 'all' && catName) {
-      document.title = `${catName} Archive | ApexChief`;
-    } else {
-      document.title = 'Editorial News Archive | ApexChief';
+      document.title = `${catName} | Entrepreneur Mirror`;
+    } else if (!pathname?.startsWith('/category/')) {
+      document.title = 'Editorial Archive | Entrepreneur Mirror';
     }
-  }, [searchParams, categories, defaultCategory]);
+  }, [searchParams, pathname, categories, resolveStateFromUrl]);
 
-  // Fetch dynamic articles
   useEffect(() => {
-    fetch('/api/articles')
-      .then((res) => {
-        if (!res.ok) return null;
-        return res.json();
-      })
-      .then((data) => {
-        if (Array.isArray(data)) setArticles(data);
-      })
-      .catch(() => {});
-  }, []);
+    if (initialArticles && initialArticles.length > 0) return;
 
-  // Fetch dynamic categories
-  useEffect(() => {
-    fetch('/api/categories')
-      .then((res) => {
-        if (!res.ok) return null;
-        return res.json();
-      })
-      .then((data) => {
-        if (Array.isArray(data)) setCategories(data.filter((c) => c.isVisible !== false));
-      })
-      .catch(() => {});
-  }, []);
-
-  // Prevent background scroll when drawer is open
-  useEffect(() => {
-    if (isFilterDrawerOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isFilterDrawerOpen]);
-
-  // Close drawer on Escape key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsFilterDrawerOpen(false);
+    const fetchFreshData = async () => {
+      try {
+        const [artRes, catRes] = await Promise.all([
+          fetch('/api/articles?summary=1'),
+          fetch('/api/categories'),
+        ]);
+        const artJson = await artRes.json();
+        const catJson = await catRes.json();
+        const artList = Array.isArray(artJson) ? artJson : artJson?.data;
+        const catList = Array.isArray(catJson) ? catJson : catJson?.data;
+        if (Array.isArray(artList) && artList.length > 0) setArticles(artList);
+        if (Array.isArray(catList) && catList.length > 0) setCategories(catList);
+      } catch (err) {
+        console.warn('Could not load live archive updates:', err);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+    fetchFreshData();
+  }, [initialArticles]);
 
-  const handleCategoryChange = (slug: string) => {
-    setActiveCategory(slug);
-    setActiveSub(null);
-    setActiveRegion(null);
-    setDisplayCount(12);
-    if (slug === 'all') {
-      router.push('/category', { scroll: false });
-    } else {
-      router.push(`/category/${slug}`, { scroll: false });
+  const currentCategoryObj = useMemo(() => {
+    const norm = normalizeKey(activeCategory);
+    if (!norm || norm === 'all') return null;
+    return (
+      categories.find(
+        (c) => normalizeKey(c.slug) === norm || normalizeKey(c.name) === norm
+      ) || null
+    );
+  }, [categories, activeCategory]);
+
+  const navigateWithParams = (nextCategory: string, nextSub: string | null) => {
+    const norm = normalizeKey(nextCategory);
+    if (!nextCategory || norm === 'all') {
+      router.push('/news');
+      return;
     }
+
+    const matchedCat = categories.find(
+      (c) => normalizeKey(c.slug) === norm || normalizeKey(c.name) === norm
+    );
+    const cleanSlug = matchedCat?.slug || nextCategory.toLowerCase().trim().replace(/\s+/g, '-');
+    const url = nextSub
+      ? `/category/${cleanSlug}?sub=${encodeURIComponent(nextSub)}`
+      : `/category/${cleanSlug}`;
+    router.push(url);
   };
 
-  const handleSubChange = (subSlug: string | null) => {
-    setActiveSub(subSlug);
-    setDisplayCount(12);
-    const basePath = activeCategory === 'all' ? '/category' : `/category/${activeCategory}`;
-    if (!subSlug) {
-      router.push(basePath, { scroll: false });
-    } else {
-      router.push(`${basePath}?sub=${subSlug}`, { scroll: false });
-    }
-  };
-
-  const handleResetFilters = () => {
-    setSearchQuery('');
-    setSortBy('newest');
-    setActiveCategory('all');
+  const handleCategoryChange = (catSlug: string) => {
+    setLoading(true);
+    setActiveCategory(catSlug);
     setActiveSub(null);
-    setActiveRegion(null);
-    setDisplayCount(12);
-    router.push('/category', { scroll: false });
+    setVisibleCount(12);
+    setIsDrawerOpen(false);
+    navigateWithParams(catSlug, null);
+    setTimeout(() => setLoading(false), 180);
   };
 
-  // Find active category definition object
-  const currentCategoryObj = categories.find(
-    (c) => c.slug.toLowerCase() === activeCategory.toLowerCase()
-  );
+  const handleSubChange = (subName: string | null) => {
+    setActiveSub(subName);
+    setVisibleCount(12);
+    navigateWithParams(activeCategory, subName);
+  };
 
-  // Filter & sort
   const filteredArticles = useMemo(() => {
-    let list = articles;
+    const normCat = normalizeKey(activeCategory);
+    let list =
+      normCat && normCat !== 'all'
+        ? articles.filter((a) => articleMatchesCategory(a, normCat))
+        : articles;
 
-    // Filter by Region if specified
-    if (activeRegion) {
+    if (activeSub) {
+      const subLower = activeSub.toLowerCase();
       list = list.filter(
-        (a) => a.region?.toLowerCase() === activeRegion.toLowerCase() || a.tag.toLowerCase().includes(activeRegion.toLowerCase())
+        (a) =>
+          a.title?.toLowerCase().includes(subLower) ||
+          a.excerpt?.toLowerCase().includes(subLower) ||
+          a.tag?.toLowerCase().includes(subLower)
       );
     }
 
-    // Filter by Main Category
-    if (activeCategory !== 'all') {
-      const normCat = activeCategory.toLowerCase().trim().replace(/[-\s]/g, '');
-      list = list.filter((a) => {
-        const artCat = (a.category || '').toLowerCase().trim().replace(/[-\s]/g, '');
-        if (artCat === normCat) return true;
-        if ((normCat === 'toplist' || normCat === 'top10') && (artCat === 'toplist' || artCat === 'top10' || a.placement === 'top10')) {
-          return true;
-        }
-        if ((normCat === 'realstate' || normCat === 'realestate') && (artCat === 'realstate' || artCat === 'realestate')) {
-          return true;
-        }
-        if ((normCat === 'startup' || normCat === 'startups') && (artCat === 'startup' || artCat === 'startups')) {
-          return true;
-        }
-        return false;
-      });
-    }
-
-    // Filter by Subcategory
-    if (activeSub) {
-      const normSub = activeSub.toLowerCase().trim().replace(/[-\s]/g, '');
-      list = list.filter((a) => {
-        const artSub = (a.subcategory || '').toLowerCase().trim().replace(/[-\s]/g, '');
-        const artTag = a.tag.toLowerCase().trim().replace(/[-\s]/g, '');
-        return artSub === normSub || artTag.includes(normSub) || a.title.toLowerCase().includes(normSub);
-      });
-    }
-
-    // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
         (a) =>
-          a.title.toLowerCase().includes(q) ||
-          a.excerpt.toLowerCase().includes(q) ||
-          a.category.toLowerCase().includes(q) ||
-          (a.subcategory && a.subcategory.toLowerCase().includes(q)) ||
-          a.tag.toLowerCase().includes(q)
+          a.title?.toLowerCase().includes(q) ||
+          a.excerpt?.toLowerCase().includes(q) ||
+          a.author?.toLowerCase().includes(q) ||
+          a.tag?.toLowerCase().includes(q) ||
+          a.category?.toLowerCase().includes(q)
       );
     }
 
-    // Sort
-    if (sortBy === 'title') {
-      return [...list].sort((a, b) => a.title.localeCompare(b.title));
-    }
-
     return list;
-  }, [articles, activeCategory, activeSub, activeRegion, searchQuery, sortBy]);
+  }, [articles, activeCategory, activeSub, searchQuery]);
 
-  const displayedArticles = filteredArticles.slice(0, displayCount);
-  const hasMore = displayedArticles.length < filteredArticles.length;
+  const showLeadSplit = !searchQuery.trim() && filteredArticles.length > 0;
+  const leadArticle = showLeadSplit ? filteredArticles[0] : null;
+  const gridSource = showLeadSplit ? filteredArticles.slice(1) : filteredArticles;
+  const displayedArticles = gridSource.slice(0, visibleCount);
+  const remainingCount = Math.max(0, gridSource.length - displayedArticles.length);
 
-  const hasActiveFilters = activeCategory !== 'all' || !!activeSub || !!activeRegion || !!searchQuery.trim();
-  const activeFiltersCount = [
-    activeCategory !== 'all',
-    !!activeSub,
-    !!activeRegion,
-    !!searchQuery.trim(),
-  ].filter(Boolean).length;
+  const sectionLabel = currentCategoryObj
+    ? `${currentCategoryObj.name} Dispatches`
+    : 'All Editorial Dispatches';
 
   return (
-    <div className="w-full pt-1">
-      {/* Sleek Minimal 1-Line Breadcrumb / Label Header */}
-      <nav aria-label="Breadcrumb" className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2.5 px-0.5 overflow-hidden">
-        <div className="flex items-center space-x-1.5 flex-wrap overflow-hidden no-scrollbar">
-          <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">
-            Home
-          </Link>
-          <span>/</span>
-          <Link href="/category" className="text-[#f7413e] font-semibold hover:underline">
-            Categories
-          </Link>
-          {activeCategory !== 'all' && currentCategoryObj && (
-            <>
-              <span>/</span>
-              <span className="text-black dark:text-white font-bold truncate max-w-[120px] sm:max-w-none">{currentCategoryObj.name}</span>
-            </>
-          )}
-          {activeSub && (
-            <>
-              <span>/</span>
-              <span className="text-[#f7413e] font-bold truncate max-w-[120px] sm:max-w-none">{activeSub}</span>
-            </>
-          )}
-        </div>
-        <div className="shrink-0 text-gray-400 dark:text-gray-500 font-mono text-[11px] hidden sm:block">
-          {filteredArticles.length} Stories
-        </div>
-      </nav>
-
-      {/* Ultra Clean & Simple 1-Line Filter Control Bar */}
-      <div className="bg-gray-50 dark:bg-[#181818] border border-gray-200 dark:border-white/10 rounded-md p-2 sm:p-2.5 mb-5 shadow-xs">
-        <div className="flex items-center justify-between gap-2 sm:gap-4">
-          {/* Left Corner: Filter Button & Quick Active Tags */}
-          <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar scrollbar-none py-0.5 flex-1 min-w-0">
-            {/* Filter Drawer Trigger Button */}
-            <button
-              onClick={() => setIsFilterDrawerOpen(true)}
-              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded text-xs font-oswald uppercase tracking-wider transition-all cursor-pointer shadow-xs shrink-0 ${
-                hasActiveFilters
-                  ? 'bg-[#f7413e] text-white font-bold hover:bg-[#d63431]'
-                  : 'bg-black dark:bg-white text-white dark:text-black font-semibold hover:bg-gray-800 dark:hover:bg-gray-100'
-              }`}
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>Filters</span>
-              {hasActiveFilters && (
-                <span className="ml-0.5 px-1.5 py-0.2 bg-white/25 text-white text-[10px] rounded-full font-mono font-bold">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
-
-            {/* Active Category Pill (quick dismiss) */}
-            {activeCategory !== 'all' && currentCategoryObj && (
-              <button
-                onClick={() => handleCategoryChange('all')}
-                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded text-xs font-mono bg-gray-200 dark:bg-white/10 text-black dark:text-white hover:bg-red-100 dark:hover:bg-red-950/40 hover:text-red-600 transition-colors shrink-0 group cursor-pointer"
-                title="Remove category filter"
-              >
-                <span className="font-semibold">{currentCategoryObj.name}</span>
-                <X className="w-3 h-3 text-gray-500 group-hover:text-red-600" />
-              </button>
-            )}
-
-            {/* Active Subcategory Pill (quick dismiss) */}
-            {activeSub && (
-              <button
-                onClick={() => handleSubChange(null)}
-                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded text-xs font-mono bg-gray-200 dark:bg-white/10 text-black dark:text-white hover:bg-red-100 dark:hover:bg-red-950/40 hover:text-red-600 transition-colors shrink-0 group cursor-pointer"
-                title="Remove topic filter"
-              >
-                <span className="uppercase font-semibold">{activeSub}</span>
-                <X className="w-3 h-3 text-gray-500 group-hover:text-red-600" />
-              </button>
-            )}
-
-            {/* Active Search Pill (quick dismiss) */}
-            {searchQuery.trim() && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded text-xs font-mono bg-gray-200 dark:bg-white/10 text-black dark:text-white hover:bg-red-100 dark:hover:bg-red-950/40 hover:text-red-600 transition-colors shrink-0 group cursor-pointer"
-                title="Clear search"
-              >
-                <span className="truncate max-w-[100px] font-semibold">&quot;{searchQuery}&quot;</span>
-                <X className="w-3 h-3 text-gray-500 group-hover:text-red-600" />
-              </button>
-            )}
-
-            {/* Quick Reset Button if multiple filters active */}
-            {hasActiveFilters && (
-              <button
-                onClick={handleResetFilters}
-                className="text-[11px] font-mono text-gray-400 hover:text-red-500 transition-colors shrink-0 underline cursor-pointer hidden md:inline"
-              >
-                Clear all
-              </button>
-            )}
+    <div className="nf-container py-6 sm:py-10">
+      {/* Standalone /news Masthead (hidden when /category/[slug] already renders its H1 above) */}
+      {!initialCategory && (
+        <header className="mb-8 pb-6 border-b border-[#cbd5e1]/45 flex flex-col gap-3">
+          <SectionTitle title="Newsroom Archive" highlight />
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <h1 className="nf-font-display text-[30px] sm:text-[40px] font-bold leading-[1.15] tracking-[-0.025em] text-[#020a1c]">
+              Entrepreneur Mirror Archive
+            </h1>
+            <p className="text-[14px] text-[#657285]">
+              {articles.length} verified dispatches across {categories.length} sections
+            </p>
           </div>
-
-          {/* Right Side: Quick Search & Sort */}
-          <div className="flex items-center space-x-2 shrink-0">
-            {/* Quick Search on Desktop */}
-            <div className="relative hidden sm:block w-36 md:w-48">
-              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                className="w-full bg-white dark:bg-[#222222] text-xs text-black dark:text-white pl-8 pr-2.5 py-1.5 rounded border border-gray-300 dark:border-white/15 focus:outline-none focus:border-[#f7413e]"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:hover:text-white"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-
-            {/* Sort Dropdown */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'newest' | 'title')}
-              className="bg-white dark:bg-[#222222] text-xs text-black dark:text-white px-2.5 py-1.5 rounded border border-gray-300 dark:border-white/15 focus:outline-none font-mono cursor-pointer"
-            >
-              <option value="newest">Latest First</option>
-              <option value="title">A - Z</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Filter Slide-Over Drawer Modal */}
-      {isFilterDrawerOpen && (
-        <div className="fixed inset-0 z-[99999] overflow-hidden">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-            onClick={() => setIsFilterDrawerOpen(false)}
-          />
-
-          <div className="fixed inset-y-0 left-0 max-w-full flex">
-            <div className="w-[90vw] sm:w-screen max-w-md bg-white dark:bg-[#141414] shadow-2xl border-r border-gray-200 dark:border-white/10 flex flex-col z-[99999] animate-in slide-in-from-left duration-200">
-              {/* Drawer Header */}
-              <div className="p-4 sm:p-5 border-b border-gray-200 dark:border-white/10 flex items-center justify-between bg-gray-50 dark:bg-[#1a1a1a]">
-                <div className="flex items-center space-x-2">
-                  <SlidersHorizontal className="w-4 h-4 text-[#f7413e]" />
-                  <h2 className="font-oswald text-base sm:text-lg font-bold uppercase tracking-wider text-black dark:text-white">
-                    Filters & Categories
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setIsFilterDrawerOpen(false)}
-                  className="p-1.5 rounded text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                  aria-label="Close filters"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Drawer Body */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6">
-                {/* Search in Drawer */}
-                <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 font-bold">
-                    Search Articles
-                  </label>
-                  <div className="relative">
-                    <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Type keywords, companies, topics..."
-                      className="w-full bg-gray-50 dark:bg-[#202020] text-sm text-black dark:text-white pl-9 pr-8 py-2.5 rounded border border-gray-300 dark:border-white/15 focus:outline-none focus:border-[#f7413e]"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:hover:text-white"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Categories Pillar Section */}
-                <div>
-                  <div className="flex items-center justify-between mb-2.5">
-                    <label className="text-xs font-mono uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">
-                      Editorial Category
-                    </label>
-                    <span className="text-[11px] font-mono text-gray-400">
-                      {categories.length + 1} categories
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                    {/* All Stories Button */}
-                    <button
-                      onClick={() => handleCategoryChange('all')}
-                      className={`flex items-center justify-between px-3 py-2.5 rounded text-xs font-oswald uppercase tracking-wider text-left transition-all cursor-pointer ${
-                        activeCategory === 'all' && !activeRegion
-                          ? 'bg-[#f7413e] text-white font-bold shadow-xs'
-                          : 'bg-gray-100 dark:bg-[#1e1e1e] text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-[#262626]'
-                      }`}
-                    >
-                      <span className="truncate">All Stories</span>
-                      <span className="text-[11px] font-mono opacity-80 ml-2">({articles.length})</span>
-                    </button>
-
-                    {/* Category Buttons */}
-                    {categories.map((cat) => {
-                      const norm = cat.slug.toLowerCase().trim().replace(/[-\s]/g, '');
-                      const isActive = activeCategory.toLowerCase().trim() === cat.slug.toLowerCase().trim() && !activeRegion;
-                      const count = articles.filter((a) => {
-                        const artCat = a.category.toLowerCase().trim().replace(/[-\s]/g, '');
-                        if (artCat === norm) return true;
-                        if (norm === 'interview' && (a.placement === 'interview' || a.tag.toLowerCase().includes('interview') || a.title.toLowerCase().startsWith('interview:'))) return true;
-                        if ((norm === 'toplist' || norm === 'top10') && (a.placement === 'top10' || a.tag.toLowerCase().includes('top 10') || a.title.toLowerCase().includes('top 10'))) return true;
-                        if ((norm === 'realstate' || norm === 'realestate') && (artCat === 'realstate' || artCat === 'realestate' || a.tag.toLowerCase().includes('real estate'))) return true;
-                        if ((norm === 'startup' || norm === 'startups') && (artCat === 'startup' || artCat === 'startups' || a.tag.toLowerCase().includes('startup') || a.tag.toLowerCase().includes('scaleup'))) return true;
-                        return false;
-                      }).length;
-
-                      return (
-                        <button
-                          key={cat.slug}
-                          onClick={() => handleCategoryChange(cat.slug)}
-                          className={`flex items-center justify-between px-3 py-2.5 rounded text-xs font-oswald uppercase tracking-wider text-left transition-all cursor-pointer ${
-                            isActive
-                              ? 'bg-[#f7413e] text-white font-bold shadow-xs'
-                              : 'bg-gray-100 dark:bg-[#1e1e1e] text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-[#262626]'
-                          }`}
-                        >
-                          <span className="truncate">{cat.name}</span>
-                          <span className="text-[11px] font-mono opacity-80 ml-2">({count})</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Subcategory / Topics Section */}
-                {currentCategoryObj && currentCategoryObj.subcategories && currentCategoryObj.subcategories.length > 0 && (
-                  <div className="pt-2 border-t border-gray-200 dark:border-white/10">
-                    <div className="flex items-center space-x-1.5 text-xs font-mono uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2.5 font-bold">
-                      <Layers className="w-3.5 h-3.5 text-[#f7413e]" />
-                      <span>{currentCategoryObj.name} Topics</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1.5">
-                      <button
-                        onClick={() => handleSubChange(null)}
-                        className={`px-3 py-1.5 rounded text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
-                          activeSub === null
-                            ? 'bg-black dark:bg-white text-white dark:text-black font-bold shadow-xs'
-                            : 'bg-gray-100 dark:bg-[#202020] text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-white/10 hover:border-black dark:hover:border-white'
-                        }`}
-                      >
-                        All {currentCategoryObj.name}
-                      </button>
-
-                      {currentCategoryObj.subcategories.map((sub) => {
-                        const isSubActive = activeSub === sub.slug;
-                        return (
-                          <button
-                            key={sub.slug}
-                            onClick={() => handleSubChange(sub.slug)}
-                            className={`px-3 py-1.5 rounded text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
-                              isSubActive
-                                ? 'bg-black dark:bg-white text-white dark:text-black font-bold shadow-xs'
-                                : 'bg-gray-100 dark:bg-[#202020] text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-white/10 hover:border-black dark:hover:border-white'
-                            }`}
-                          >
-                            {sub.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Sort Order */}
-                <div className="pt-2 border-t border-gray-200 dark:border-white/10">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 font-bold">
-                    Sort Stories
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => setSortBy('newest')}
-                      className={`px-3 py-2 rounded text-xs font-mono tracking-wider transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
-                        sortBy === 'newest'
-                          ? 'bg-black dark:bg-white text-white dark:text-black font-bold'
-                          : 'bg-gray-100 dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10'
-                      }`}
-                    >
-                      {sortBy === 'newest' && <Check className="w-3.5 h-3.5" />}
-                      <span>Latest First</span>
-                    </button>
-
-                    <button
-                      onClick={() => setSortBy('title')}
-                      className={`px-3 py-2 rounded text-xs font-mono tracking-wider transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
-                        sortBy === 'title'
-                          ? 'bg-black dark:bg-white text-white dark:text-black font-bold'
-                          : 'bg-gray-100 dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10'
-                      }`}
-                    >
-                      {sortBy === 'title' && <Check className="w-3.5 h-3.5" />}
-                      <span>Alphabetical</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Drawer Footer */}
-              <div className="p-4 sm:p-5 pb-6 sm:pb-5 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1a1a1a] flex items-center gap-3">
-                {hasActiveFilters && (
-                  <button
-                    onClick={handleResetFilters}
-                    className="flex-1 py-2.5 px-3 rounded border border-gray-300 dark:border-white/20 text-xs font-oswald uppercase tracking-wider text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors flex items-center justify-center space-x-1 cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Reset</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={() => setIsFilterDrawerOpen(false)}
-                  className="flex-[2] py-2.5 px-4 rounded bg-[#f7413e] hover:bg-[#d63431] text-white text-xs font-oswald uppercase tracking-wider font-bold shadow-md transition-all flex items-center justify-center space-x-1 cursor-pointer"
-                >
-                  <span>Show {filteredArticles.length} Stories</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        </header>
       )}
 
-      {/* Article Grid */}
-      {displayedArticles.length === 0 ? (
-        <div className="py-16 text-center bg-gray-50 dark:bg-[#181818] border border-gray-200 dark:border-white/15 rounded-md p-8">
-          <Newspaper className="w-12 h-12 text-gray-400 dark:text-white/40 mx-auto mb-3" />
-          <h3 className="font-serif text-2xl font-bold text-black dark:text-white">
-            No matching editorial stories found
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-md mx-auto">
-            Try adjusting your search criteria or selecting a different category or topic.
-          </p>
-          <button
-            onClick={handleResetFilters}
-            className="mt-4 btn-load-more px-5 py-2.5 text-xs font-oswald uppercase tracking-widest rounded transition-colors cursor-pointer"
-          >
-            Reset Filters
-          </button>
+      {/* Clean Search + Category Filter Bar */}
+      <div className="mb-8 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Quick Category Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto nf-no-scrollbar pb-1 sm:pb-0">
+            <button
+              type="button"
+              onClick={() => handleCategoryChange('all')}
+              className={`px-3.5 h-9 rounded-md text-[13px] font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                normalizeKey(activeCategory) === 'all'
+                  ? 'bg-[#020a1c] text-white'
+                  : 'bg-[#f7fafc] text-[#020a1c] hover:bg-[#e2e8f0]/60 border border-[#cbd5e1]/50'
+              }`}
+            >
+              All Stories ({articles.length})
+            </button>
+
+            {categories.slice(0, 6).map((cat) => {
+              const isActive =
+                normalizeKey(activeCategory) === normalizeKey(cat.slug);
+              return (
+                <button
+                  key={cat.slug}
+                  type="button"
+                  onClick={() => handleCategoryChange(cat.slug)}
+                  className={`px-3.5 h-9 rounded-md text-[13px] font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                    isActive
+                      ? 'bg-[#cc0000] text-white'
+                      : 'bg-[#f7fafc] text-[#020a1c] hover:text-[#cc0000] border border-[#cbd5e1]/50'
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              );
+            })}
+
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen((prev) => !prev)}
+              className="px-3.5 h-9 rounded-md text-[13px] font-medium whitespace-nowrap bg-[#ffffff] text-[#020a1c] border border-[#cbd5e1] hover:border-[#020a1c] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Filter className="w-3.5 h-3.5 text-[#cc0000]" />
+              <span>All Sections ({categories.length})</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  isDrawerOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full sm:w-[280px] flex-shrink-0">
+            <Search className="w-4 h-4 text-[#657285] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Filter headlines, authors..."
+              className="w-full h-9 pl-9 pr-8 rounded-md bg-[#f7fafc] border border-[#cbd5e1]/70 text-[13px] text-[#020a1c] placeholder-[#657285] focus:outline-none focus:border-[#cc0000] transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#657285] hover:text-[#020a1c] cursor-pointer"
+                aria-label="Clear filter"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedArticles.map((article, idx) => (
-            <div key={article.slug} className="relative group/rank-card">
-              {activeCategory === 'top-list' && (
-                <div className="absolute top-2 left-2 z-20 bg-[#f7413e] text-white font-oswald text-xs font-bold px-2 py-0.5 shadow-md flex items-center space-x-1">
-                  <span>RANK 0{idx + 1}</span>
-                </div>
-              )}
-              <ArticleCard article={article} variant="standard" />
+
+        {/* Expanded All-14-Categories Directory Drawer */}
+        {isDrawerOpen && (
+          <div className="p-5 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/60 nf-reveal">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-[#657285]">
+                Browse All Editorial Sections
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                className="text-[#657285] hover:text-[#020a1c] cursor-pointer"
+                aria-label="Close drawer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2">
+              {categories.map((cat) => {
+                const norm = normalizeKey(cat.slug);
+                const isActive = normalizeKey(activeCategory) === norm;
+                const count = articles.filter((a) => articleMatchesCategory(a, norm)).length;
+                return (
+                  <button
+                    key={cat.slug}
+                    type="button"
+                    onClick={() => handleCategoryChange(cat.slug)}
+                    className={`flex items-center justify-between px-3 py-2 rounded-md text-[12px] font-medium transition-colors cursor-pointer ${
+                      isActive
+                        ? 'bg-[#cc0000] text-white'
+                        : 'bg-white text-[#020a1c] border border-[#cbd5e1]/50 hover:border-[#cc0000] hover:text-[#cc0000]'
+                    }`}
+                  >
+                    <span className="truncate">{cat.name}</span>
+                    <span className="text-[11px] opacity-70 ml-1">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {currentCategoryObj?.subcategories && currentCategoryObj.subcategories.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-[#cbd5e1]/45 flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#657285] mr-1">
+                  Topics:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleSubChange(null)}
+                  className={`px-2.5 py-1 rounded text-[12px] font-medium cursor-pointer ${
+                    !activeSub
+                      ? 'bg-[#020a1c] text-white'
+                      : 'bg-white text-[#657285] border border-[#cbd5e1]/50'
+                  }`}
+                >
+                  All
+                </button>
+                {currentCategoryObj.subcategories.map((sub) => (
+                  <button
+                    key={sub.slug || sub.name}
+                    type="button"
+                    onClick={() => handleSubChange(sub.name)}
+                    className={`px-2.5 py-1 rounded text-[12px] font-medium cursor-pointer ${
+                      activeSub === sub.name
+                        ? 'bg-[#020a1c] text-white'
+                        : 'bg-white text-[#657285] border border-[#cbd5e1]/50 hover:text-[#cc0000]'
+                    }`}
+                  >
+                    {sub.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Loading Indicator */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <div key={n} className="flex flex-col gap-3 animate-pulse">
+              <div className="w-full h-[205px] rounded-[8px] bg-[#f1f5f9]" />
+              <div className="h-3 w-28 rounded bg-[#f1f5f9]" />
+              <div className="h-5 w-full rounded bg-[#f1f5f9]" />
             </div>
           ))}
         </div>
-      )}
-
-      {/* Load More Pagination */}
-      {hasMore && (
-        <div className="text-center mt-10 pt-6 border-t border-gray-200 dark:border-white/15">
+      ) : filteredArticles.length === 0 ? (
+        <div className="my-8 p-12 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/45 text-center flex flex-col items-center gap-3">
+          <p className="text-[18px] font-semibold text-[#020a1c]">
+            No stories matched your current filter
+          </p>
+          <p className="text-[14px] text-[#657285] max-w-md">
+            Try clearing your search term or switching back to the full Entrepreneur Mirror archive.
+          </p>
           <button
-            onClick={() => setDisplayCount((prev) => prev + 12)}
-            className="btn-load-more font-oswald text-xs font-bold uppercase tracking-widest px-8 py-3 rounded transition-all inline-flex items-center space-x-2 cursor-pointer shadow-xs"
+            type="button"
+            onClick={() => {
+              setSearchQuery('');
+              handleCategoryChange('all');
+            }}
+            className="mt-2 px-5 h-10 rounded-md bg-[#020a1c] hover:bg-[#cc0000] text-white text-[13px] font-medium transition-colors cursor-pointer"
           >
-            <span>Load More Stories ({filteredArticles.length - displayCount} remaining)</span>
+            View All Dispatches
           </button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-10">
+          {/* Asymmetric Lead Feature Split (NewsFlash Category Hero Pattern) */}
+          {leadArticle && (
+            <Link
+              href={getBlogUrl(leadArticle)}
+              className="nf-card group flex flex-col md:flex-row items-center gap-6 md:gap-8 p-5 sm:p-6 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/45 no-underline"
+            >
+              <div className="w-full md:flex-1 flex flex-col items-start gap-3 order-2 md:order-1">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <SectionTitle
+                    title={normalizeCatName(leadArticle.category)}
+                    highlight
+                  />
+                  <span className="w-[3px] h-[3px] rounded-full bg-[#cbd5e1]" />
+                  <MetaDotDate
+                    category={leadArticle.readTime || 'Lead Story'}
+                    date={leadArticle.date}
+                  />
+                </div>
+                <h2 className="nf-card-title nf-font-display text-[22px] sm:text-[28px] font-bold leading-[1.2] tracking-[-0.02em] line-clamp-3">
+                  {leadArticle.title}
+                </h2>
+                {leadArticle.excerpt && (
+                  <p className="text-[15px] leading-[1.55] text-[#657285] line-clamp-3">
+                    {leadArticle.excerpt}
+                  </p>
+                )}
+                <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#cc0000] mt-1">
+                  <span>Read Full Story</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                </span>
+              </div>
+
+              <figure className="nf-img-wrap w-full md:flex-[1.25] h-[230px] sm:h-[310px] order-1 md:order-2">
+                <NewsFlashImg
+                  src={leadArticle.image}
+                  alt={leadArticle.title}
+                  eager
+                />
+              </figure>
+            </Link>
+          )}
+
+          {/* Section Title + 3-Column Photo-Below-Card Grid */}
+          {displayedArticles.length > 0 && (
+            <div className="flex flex-col gap-6">
+              <SectionTitle title={sectionLabel} showViewAll={false} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
+                {displayedArticles.map((article) => (
+                  <PhotoBelowCard
+                    key={article.slug}
+                    article={article}
+                    imageHeightClass="h-[205px]"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Load More Control */}
+          {remainingCount > 0 && (
+            <div className="pt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((prev) => prev + 12)}
+                className="px-6 h-11 rounded-md bg-[#020a1c] hover:bg-[#cc0000] text-white text-[14px] font-medium transition-colors cursor-pointer"
+              >
+                Load More Stories ({remainingCount} remaining)
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

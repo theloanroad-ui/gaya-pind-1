@@ -1,43 +1,31 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Link from 'next/link';
-import {
-  PenTool,
-  ArrowLeft,
-  CheckCircle2,
-  Send,
-  BookOpen,
-  Sparkles,
-  Users,
-  ShieldCheck,
-  TrendingUp,
-  Mail,
-  Award,
-  HelpCircle,
-} from 'lucide-react';
+import { BookOpen, Users, ShieldCheck, TrendingUp, Award, HelpCircle, Sparkles } from 'lucide-react';
 import WriteForUsForm from './WriteForUsForm';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { SectionTitle } from '@/components/newsflash/NewsFlashPrimitives';
+import { getSiteBaseUrl } from '@/lib/articlePageHelpers';
+
+const baseUrl = getSiteBaseUrl();
 
 export const metadata: Metadata = {
-  title: 'Write For Us | Editorial Submission Guidelines',
+  title: 'Write For Us | Contributor Guidelines | Entrepreneur Mirror',
   description:
-    'Contribute thought leadership, executive perspectives, founder retrospectives, and industry analyses to ApexChief. Review our contributor guidelines and submit your editorial pitch.',
-  alternates: {
-    canonical: 'https://www.apexchief.com/write-for-us',
-  },
+    'Contribute founder essays, executive perspectives, industry analysis, and interview pitches to Entrepreneur Mirror.',
+  alternates: { canonical: `${baseUrl}/write-for-us` },
   openGraph: {
-    title: 'Write For Us | Editorial Submission Guidelines | ApexChief',
+    title: 'Write For Us | Contributor Guidelines | Entrepreneur Mirror',
     description:
-      'Contribute thought leadership, executive perspectives, founder retrospectives, and industry analyses to ApexChief. Review our contributor guidelines and submit your editorial pitch.',
-    url: 'https://www.apexchief.com/write-for-us',
-    siteName: 'ApexChief',
+      'Contribute thought leadership, executive interviews, and industry analysis to Entrepreneur Mirror.',
+    url: `${baseUrl}/write-for-us`,
+    siteName: 'Entrepreneur Mirror',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Write For Us | Contributor Guidelines | ApexChief',
+    title: 'Write For Us | Entrepreneur Mirror',
     description:
-      'Submit guest columns, executive insights, and industry deep dives to ApexChief editors.',
+      'Submit guest essays, executive interviews, and deep dives to Entrepreneur Mirror editors.',
   },
 };
 
@@ -46,34 +34,24 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'WebPage',
-      '@id': 'https://www.apexchief.com/write-for-us#webpage',
-      url: 'https://www.apexchief.com/write-for-us',
-      name: 'Write For Us - Editorial Contributor Guidelines',
+      '@id': `${baseUrl}/write-for-us#webpage`,
+      url: `${baseUrl}/write-for-us`,
+      name: 'Write For Us - Entrepreneur Mirror Contributor Guidelines',
       description:
-        'Contribute thought leadership, executive perspectives, founder retrospectives, and industry analyses to ApexChief.',
+        'Contribute founder essays, executive perspectives, and industry analysis to Entrepreneur Mirror.',
       isPartOf: {
         '@type': 'WebSite',
-        '@id': 'https://www.apexchief.com/#website',
-        name: 'ApexChief',
-        url: 'https://www.apexchief.com',
+        '@id': `${baseUrl}/#website`,
+        name: 'Entrepreneur Mirror',
+        url: baseUrl,
       },
     },
     {
       '@type': 'BreadcrumbList',
-      '@id': 'https://www.apexchief.com/write-for-us#breadcrumb',
+      '@id': `${baseUrl}/write-for-us#breadcrumb`,
       itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: 'https://www.apexchief.com',
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'Write For Us',
-          item: 'https://www.apexchief.com/write-for-us',
-        },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: baseUrl },
+        { '@type': 'ListItem', position: 2, name: 'Write For Us', item: `${baseUrl}/write-for-us` },
       ],
     },
   ],
@@ -81,13 +59,12 @@ const jsonLd = {
 
 export default function WriteForUsPage() {
   return (
-    <div className="w-full max-w-5xl mx-auto py-4 px-4 sm:px-6">
+    <div className="nf-container py-6 sm:py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Top Breadcrumb */}
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },
@@ -96,192 +73,167 @@ export default function WriteForUsPage() {
         showBackLink
         backHref="/"
         backLabel="Front Page"
-        rightBadge="Contributor Network"
+        rightBadge="Contributors"
         includeJsonLd={false}
       />
 
-      {/* Hero Header */}
-      <div className="mb-12 text-left">
-        <div className="inline-flex items-center space-x-2 bg-[#0a0a0a] dark:bg-white text-white dark:text-black text-[10px] font-oswald uppercase px-2.5 py-1 tracking-widest font-bold mb-3">
-          <PenTool className="w-3 h-3 text-[#f7413e]" />
-          <span>ApexChief Editorial Contributor Program</span>
-        </div>
-        <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-black dark:text-white tracking-tight mb-4">
-          Write For ApexChief
+      <header className="max-w-3xl mb-10 flex flex-col items-start gap-3">
+        <SectionTitle title="Editorial Contributor Network" highlight />
+        <h1 className="nf-font-display text-[32px] sm:text-[44px] font-bold leading-[1.12] tracking-[-0.025em] text-[#020a1c]">
+          Write For Entrepreneur Mirror
         </h1>
-        <p className="font-serif italic text-base sm:text-lg text-gray-700 dark:text-gray-300 max-w-3xl leading-relaxed">
-          Share your executive perspectives, industry breakthroughs, founder journeys, and strategic insights with a global audience of CEOs, investors, technologists, and decision-makers.
+        <p className="text-[16px] leading-[1.6] text-[#657285]">
+          Share founder insights, market intelligence, healthcare innovation, real estate analysis, and executive interviews with Entrepreneur Mirror readers worldwide.
         </p>
-      </div>
+      </header>
 
-      {/* Why Write For ApexChief - 3 Feature Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
-        <div className="p-6 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-sm">
-          <div className="w-10 h-10 rounded-sm bg-[#f7413e]/10 text-[#f7413e] flex items-center justify-center mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="p-6 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/50">
+          <div className="w-10 h-10 rounded-md bg-[#cc0000]/10 text-[#cc0000] flex items-center justify-center mb-4">
             <Users className="w-5 h-5" />
           </div>
-          <h3 className="font-oswald text-lg font-bold uppercase tracking-wider text-black dark:text-white mb-2">
-            Executive Readership
+          <h3 className="text-[17px] font-bold text-[#020a1c] mb-2">
+            Founder &amp; Executive Audience
           </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed font-sans">
-            Reach hundreds of thousands of monthly executives, venture capitalists, founders, and tech pioneers across the US, Europe, Asia, and the Middle East.
+          <p className="text-[13px] text-[#657285] leading-relaxed">
+            Reach entrepreneurs, founders, investors, and technology leaders across global business ecosystems.
           </p>
         </div>
 
-        <div className="p-6 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-sm">
-          <div className="w-10 h-10 rounded-sm bg-[#f7413e]/10 text-[#f7413e] flex items-center justify-center mb-4">
+        <div className="p-6 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/50">
+          <div className="w-10 h-10 rounded-md bg-[#cc0000]/10 text-[#cc0000] flex items-center justify-center mb-4">
             <Award className="w-5 h-5" />
           </div>
-          <h3 className="font-oswald text-lg font-bold uppercase tracking-wider text-black dark:text-white mb-2">
-            Author Byline &amp; Authority
+          <h3 className="text-[17px] font-bold text-[#020a1c] mb-2">
+            Verified Author Byline
           </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed font-sans">
-            Every published contributor receives a verified author profile, biographical blurb, social links, and Google News indexed authorship credit.
+          <p className="text-[13px] text-[#657285] leading-relaxed">
+            Every published contributor receives a verified author profile and full attribution across our archive.
           </p>
         </div>
 
-        <div className="p-6 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-sm">
-          <div className="w-10 h-10 rounded-sm bg-[#f7413e]/10 text-[#f7413e] flex items-center justify-center mb-4">
+        <div className="p-6 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/50">
+          <div className="w-10 h-10 rounded-md bg-[#cc0000]/10 text-[#cc0000] flex items-center justify-center mb-4">
             <TrendingUp className="w-5 h-5" />
           </div>
-          <h3 className="font-oswald text-lg font-bold uppercase tracking-wider text-black dark:text-white mb-2">
-            Global Syndication
+          <h3 className="text-[17px] font-bold text-[#020a1c] mb-2">
+            Multi-Channel Distribution
           </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed font-sans">
-            Selected editorial pieces are featured across ApexChief daily dispatches, social feeds, and premier industry syndication networks.
+          <p className="text-[13px] text-[#657285] leading-relaxed">
+            Selected essays and executive interviews are spotlighted across Entrepreneur Mirror homepage features.
           </p>
         </div>
       </div>
 
-      {/* Main Guidelines & Form Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
-        {/* Left: Editorial Guidelines (7 Cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-14">
         <div className="lg:col-span-7 space-y-8">
           <section className="space-y-4">
-            <h2 className="font-oswald text-2xl font-bold uppercase tracking-wide text-black dark:text-white flex items-center gap-2 border-b border-gray-200 dark:border-white/10 pb-2">
-              <BookOpen className="w-5 h-5 text-[#f7413e]" />
-              <span>Topics We Welcome</span>
+            <h2 className="nf-font-display text-[22px] font-bold text-[#020a1c] flex items-center gap-2 pb-3 border-b border-[#cbd5e1]/45">
+              <BookOpen className="w-5 h-5 text-[#cc0000]" />
+              <span>Beats &amp; Topics We Welcome</span>
             </h2>
-            <p className="text-sm text-gray-700 dark:text-gray-300 font-sans leading-relaxed">
-              We seek deep, rigorous, original analysis rather than generic overviews or overt promotional material. We are actively accepting pitches on:
+            <p className="text-[14px] text-[#657285] leading-relaxed">
+              We prioritize deeply reported, practical analysis across our 14 core editorial sections:
             </p>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-gray-800 dark:text-gray-200 font-sans">
-              <li className="flex items-center space-x-2">
-                <span className="text-[#f7413e] font-bold">✓</span>
-                <span>C-Suite Leadership &amp; Board Governance</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="text-[#f7413e] font-bold">✓</span>
-                <span>Enterprise AI &amp; Autonomous Systems</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="text-[#f7413e] font-bold">✓</span>
-                <span>Venture Capital &amp; Private Equity</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="text-[#f7413e] font-bold">✓</span>
-                <span>Early-Stage Startup Scaling ($0 to $10M ARR)</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="text-[#f7413e] font-bold">✓</span>
-                <span>Commercial Real Estate &amp; PropTech</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="text-[#f7413e] font-bold">✓</span>
-                <span>Sustainable Energy &amp; Deep Tech</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="text-[#f7413e] font-bold">✓</span>
-                <span>Market Macroeconomics &amp; Geopolitics</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="text-[#f7413e] font-bold">✓</span>
-                <span>Founder Retrospectives &amp; Lessons</span>
-              </li>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[13px] font-medium text-[#020a1c]">
+              {[
+                'Business Growth & Strategy',
+                'Executive Interviews & Profiles',
+                'Technology & Applied AI',
+                'World Markets & Policy',
+                'Crypto, Web3 & Metaverse',
+                'Health & Wellness Leadership',
+                'Commercial & Residential Real Estate',
+                'Lifestyle & Founder Careers',
+              ].map((topic) => (
+                <li key={topic} className="flex items-center gap-2">
+                  <span className="text-[#cc0000] font-bold">•</span>
+                  <span>{topic}</span>
+                </li>
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="font-oswald text-2xl font-bold uppercase tracking-wide text-black dark:text-white flex items-center gap-2 border-b border-gray-200 dark:border-white/10 pb-2">
-              <ShieldCheck className="w-5 h-5 text-[#f7413e]" />
-              <span>Editorial Standards &amp; Criteria</span>
+            <h2 className="nf-font-display text-[22px] font-bold text-[#020a1c] flex items-center gap-2 pb-3 border-b border-[#cbd5e1]/45">
+              <ShieldCheck className="w-5 h-5 text-[#cc0000]" />
+              <span>Editorial Standards</span>
             </h2>
-            <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300 font-sans leading-relaxed">
-              <div className="p-3 bg-gray-50 dark:bg-white/[0.02] border-l-2 border-[#f7413e]">
-                <strong className="text-black dark:text-white block mb-1">1. 100% Original Content:</strong>
-                All submissions must be original work not published elsewhere. We maintain a zero-tolerance policy toward plagiarism or generic AI hallucinations.
+            <div className="space-y-3 text-[13px] text-[#657285] leading-relaxed">
+              <div className="p-4 rounded-[8px] bg-[#f7fafc] border-l-4 border-[#cc0000]">
+                <strong className="text-[#020a1c] block mb-1">1. Original Reporting &amp; Perspective</strong>
+                Submissions should bring firsthand insights, verified data, or clear case studies rather than generic summaries.
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-white/[0.02] border-l-2 border-[#f7413e]">
-                <strong className="text-black dark:text-white block mb-1">2. Word Count &amp; Structure:</strong>
-                Articles generally range between 900 and 2,500 words. Organize your piece with clear H2/H3 subheadings, bullet points, and authoritative source citations.
+              <div className="p-4 rounded-[8px] bg-[#f7fafc] border-l-4 border-[#cc0000]">
+                <strong className="text-[#020a1c] block mb-1">2. Structure &amp; Clarity</strong>
+                Target 800 to 2,200 words organized with clear section subheadings and concise paragraphs.
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-white/[0.02] border-l-2 border-[#f7413e]">
-                <strong className="text-black dark:text-white block mb-1">3. Non-Promotional Stance:</strong>
-                Submissions must educate, analyze, or provoke thoughtful debate. Pitches that serve purely as company sales pitches or affiliate plugs will be rejected.
-              </div>
-              <div className="p-3 bg-gray-50 dark:bg-white/[0.02] border-l-2 border-[#f7413e]">
-                <strong className="text-black dark:text-white block mb-1">4. Author Transparency:</strong>
-                Include full author name, current executive title, company affiliation, headshot image, and a 2-3 sentence biography.
+              <div className="p-4 rounded-[8px] bg-[#f7fafc] border-l-4 border-[#cc0000]">
+                <strong className="text-[#020a1c] block mb-1">3. Non-Promotional Tone</strong>
+                Educational value comes first; overt sales pitches or affiliate spam are declined.
               </div>
             </div>
           </section>
 
-          {/* Submission Review Steps */}
           <section className="space-y-4">
-            <h2 className="font-oswald text-2xl font-bold uppercase tracking-wide text-black dark:text-white flex items-center gap-2 border-b border-gray-200 dark:border-white/10 pb-2">
-              <Sparkles className="w-5 h-5 text-[#f7413e]" />
-              <span>Editorial Workflow</span>
+            <h2 className="nf-font-display text-[22px] font-bold text-[#020a1c] flex items-center gap-2 pb-3 border-b border-[#cbd5e1]/45">
+              <Sparkles className="w-5 h-5 text-[#cc0000]" />
+              <span>Publication Workflow</span>
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-              <div className="p-3 bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded">
-                <span className="font-mono text-lg font-bold text-[#f7413e]">01</span>
-                <h4 className="font-oswald text-sm font-bold uppercase mt-1 text-black dark:text-white">Pitch Submission</h4>
-                <p className="text-[11px] text-gray-500 mt-1">Submit your outline and thesis through our form or email.</p>
-              </div>
-              <div className="p-3 bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded">
-                <span className="font-mono text-lg font-bold text-[#f7413e]">02</span>
-                <h4 className="font-oswald text-sm font-bold uppercase mt-1 text-black dark:text-white">Editorial Review</h4>
-                <p className="text-[11px] text-gray-500 mt-1">Our editors review your draft within 48 to 72 business hours.</p>
-              </div>
-              <div className="p-3 bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded">
-                <span className="font-mono text-lg font-bold text-[#f7413e]">03</span>
-                <h4 className="font-oswald text-sm font-bold uppercase mt-1 text-black dark:text-white">Publication &amp; Reach</h4>
-                <p className="text-[11px] text-gray-500 mt-1">Approved stories are scheduled for global newsroom release.</p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { num: '01', title: 'Pitch Outline', desc: 'Send your headline and thesis through our submission form.' },
+                { num: '02', title: 'Desk Review', desc: 'Editors review pitches within 48–72 business hours.' },
+                { num: '03', title: 'Feature Release', desc: 'Approved stories go live across our digital edition.' },
+              ].map((step) => (
+                <div
+                  key={step.num}
+                  className="p-4 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/50 text-center"
+                >
+                  <span className="text-[18px] font-bold text-[#cc0000]">{step.num}</span>
+                  <h4 className="text-[14px] font-bold text-[#020a1c] mt-1">{step.title}</h4>
+                  <p className="text-[12px] text-[#657285] mt-1">{step.desc}</p>
+                </div>
+              ))}
             </div>
           </section>
         </div>
 
-        {/* Right: Pitch Submission Form (5 Cols) */}
         <div className="lg:col-span-5">
-          <div className="sticky top-24">
+          <div className="lg:sticky lg:top-[128px]">
             <WriteForUsForm />
           </div>
         </div>
       </div>
 
-      {/* Contributor FAQs */}
-      <div className="border-t border-gray-200 dark:border-white/10 pt-10 mb-12">
-        <h2 className="font-oswald text-2xl font-bold uppercase tracking-wide text-black dark:text-white mb-6 flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-[#f7413e]" />
-          <span>Frequently Asked Questions</span>
+      <div className="border-t border-[#cbd5e1]/45 pt-10">
+        <h2 className="nf-font-display text-[22px] font-bold text-[#020a1c] mb-6 flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-[#cc0000]" />
+          <span>Contributor FAQs</span>
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-gray-700 dark:text-gray-300 font-sans">
-          <div className="p-4 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded">
-            <h4 className="font-bold text-sm text-black dark:text-white mb-1.5">How long does the editorial review take?</h4>
-            <p className="leading-relaxed">Our editorial team reviews all contributor pitches within 2 to 3 business days. If your pitch is selected, we will reply with draft formatting instructions.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-[13px] text-[#657285]">
+          <div className="p-5 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/50">
+            <h4 className="font-bold text-[15px] text-[#020a1c] mb-1.5">
+              How long does editorial review take?
+            </h4>
+            <p className="leading-relaxed">
+              Our desk reviews pitches within 2 to 3 business days and replies directly by email if approved for drafting.
+            </p>
           </div>
-          <div className="p-4 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded">
-            <h4 className="font-bold text-sm text-black dark:text-white mb-1.5">Can I include backlinks in my article?</h4>
-            <p className="leading-relaxed">Relevant, contextual links to primary data sources, research reports, or cited studies are encouraged. Self-promotional or spammy affiliate links will be removed.</p>
-          </div>
-          <div className="p-4 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded">
-            <h4 className="font-bold text-sm text-black dark:text-white mb-1.5">Do you accept syndicated or republished content?</h4>
-            <p className="leading-relaxed">We strongly prioritize original, exclusive content. On rare occasions, we consider strategic syndication with appropriate canonical tags and permission.</p>
-          </div>
-          <div className="p-4 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded">
-            <h4 className="font-bold text-sm text-black dark:text-white mb-1.5">Where should I send PR pitches or press releases?</h4>
-            <p className="leading-relaxed">For breaking press releases or company announcements, please email our newsroom desk directly at <a href="mailto:sales@apexchief.com" className="text-[#f7413e] underline">sales@apexchief.com</a>.</p>
+          <div className="p-5 rounded-[8px] bg-[#f7fafc] border border-[#cbd5e1]/50">
+            <h4 className="font-bold text-[15px] text-[#020a1c] mb-1.5">
+              Where do I send official press releases?
+            </h4>
+            <p className="leading-relaxed">
+              Press announcements and interview requests can also be emailed directly to{' '}
+              <a
+                href="mailto:editorial@entrepreneurmirror.com"
+                className="text-[#cc0000] underline"
+              >
+                editorial@entrepreneurmirror.com
+              </a>
+              .
+            </p>
           </div>
         </div>
       </div>

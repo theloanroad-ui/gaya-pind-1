@@ -11,12 +11,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const dbCategories = await getCategoriesFromDB();
-    if (dbCategories && dbCategories.length > 0) {
-      return NextResponse.json(dbCategories);
-    }
     const categories = getCategories();
-    return NextResponse.json(categories);
+    if (categories && categories.length > 0) {
+      return NextResponse.json(categories);
+    }
+    const dbCategories = await getCategoriesFromDB();
+    return NextResponse.json(dbCategories || []);
   } catch (error: any) {
     return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
   }

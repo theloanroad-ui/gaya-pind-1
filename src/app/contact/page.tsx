@@ -1,24 +1,28 @@
 import React from 'react';
 import { Metadata } from 'next';
 import ContactClient from './ContactClient';
+import { getSiteBaseUrl } from '@/lib/articlePageHelpers';
+
+const baseUrl = getSiteBaseUrl();
 
 export const metadata: Metadata = {
   title: 'Contact Editorial Desk',
-  description: 'Connect with ApexChief editors, submit executive pitch decks, investigative tips, press releases, or reach our global business newsroom bureaus in New York and London.',
-  alternates: {
-    canonical: 'https://www.apexchief.com/contact',
-  },
+  description:
+    'Connect with Entrepreneur Mirror editors, submit executive interviews, press releases, or reach our global business newsroom desks.',
+  alternates: { canonical: `${baseUrl}/contact` },
   openGraph: {
-    title: 'Contact Editorial Desk | ApexChief',
-    description: 'Connect with ApexChief editors, submit executive pitch decks, investigative tips, press releases, or reach our global business newsroom bureaus in New York and London.',
-    url: 'https://www.apexchief.com/contact',
-    siteName: 'ApexChief',
+    title: 'Contact Editorial Desk | Entrepreneur Mirror',
+    description:
+      'Connect with Entrepreneur Mirror editors, submit executive interviews, press releases, or reach our global business newsroom desks.',
+    url: `${baseUrl}/contact`,
+    siteName: 'Entrepreneur Mirror',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Contact Editorial Desk | ApexChief',
-    description: 'Connect with ApexChief editors, submit executive pitch decks, investigative tips, press releases, or reach our global business newsroom bureaus.',
+    title: 'Contact Editorial Desk | Entrepreneur Mirror',
+    description:
+      'Connect with Entrepreneur Mirror editors, submit executive interviews, press releases, or reach our newsroom desks.',
   },
 };
 
@@ -27,59 +31,31 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'ContactPage',
-      '@id': 'https://www.apexchief.com/contact#webpage',
-      url: 'https://www.apexchief.com/contact',
-      name: 'Contact ApexChief Editorial Desk',
+      '@id': `${baseUrl}/contact#webpage`,
+      url: `${baseUrl}/contact`,
+      name: 'Contact Entrepreneur Mirror Editorial Desk',
       description:
-        'Connect with ApexChief editors, submit executive pitch decks, investigative tips, press releases, or reach our global business newsroom bureaus in New York and London.',
+        'Connect with Entrepreneur Mirror editors, submit executive interviews, press releases, or reach our global business newsroom desks.',
       isPartOf: {
         '@type': 'WebSite',
-        '@id': 'https://www.apexchief.com/#website',
-        name: 'ApexChief',
-        url: 'https://www.apexchief.com',
+        '@id': `${baseUrl}/#website`,
+        name: 'Entrepreneur Mirror',
+        url: baseUrl,
       },
       mainEntity: {
         '@type': 'NewsMediaOrganization',
-        '@id': 'https://www.apexchief.com/#organization',
-        name: 'ApexChief',
-        url: 'https://www.apexchief.com',
-        email: 'sales@apexchief.com',
-        telephone: '+916206539717',
-        address: [
-          {
-            '@type': 'PostalAddress',
-            streetAddress: '100 Financial Center Blvd, Suite 4800',
-            addressLocality: 'New York',
-            addressRegion: 'NY',
-            postalCode: '10005',
-            addressCountry: 'US',
-          },
-          {
-            '@type': 'PostalAddress',
-            streetAddress: '1 Canada Square, Canary Wharf',
-            addressLocality: 'London',
-            postalCode: 'E14 5AA',
-            addressCountry: 'GB',
-          },
-        ],
+        '@id': `${baseUrl}/#organization`,
+        name: 'Entrepreneur Mirror',
+        url: baseUrl,
+        email: 'editorial@entrepreneurmirror.com',
       },
     },
     {
       '@type': 'BreadcrumbList',
-      '@id': 'https://www.apexchief.com/contact#breadcrumb',
+      '@id': `${baseUrl}/contact#breadcrumb`,
       itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: 'https://www.apexchief.com',
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'Contact Editorial Desk',
-          item: 'https://www.apexchief.com/contact',
-        },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: baseUrl },
+        { '@type': 'ListItem', position: 2, name: 'Contact', item: `${baseUrl}/contact` },
       ],
     },
   ],

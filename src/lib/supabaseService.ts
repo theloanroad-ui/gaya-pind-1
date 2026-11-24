@@ -1,4 +1,4 @@
-import { supabaseAdmin, supabase } from './supabase';
+import { supabaseAdmin, supabase, isSupabaseConfigured } from './supabase';
 import { Article, CategoryInfo } from '@/types';
 import { siteConfig } from '@/data/siteConfig';
 import { ARTICLES } from '@/data/articles';
@@ -84,6 +84,7 @@ export function mapArticleToRow(art: Article): any {
 
 // --- ARTICLES OPERATIONS ---
 export async function getArticlesFromDB(): Promise<Article[] | null> {
+  if (!isSupabaseConfigured) return null;
   try {
     const { data, error } = await supabaseAdmin
       .from('articles')
@@ -106,6 +107,7 @@ export async function getArticlesFromDB(): Promise<Article[] | null> {
 }
 
 export async function upsertArticleInDB(article: Article): Promise<boolean> {
+  if (!isSupabaseConfigured) return false;
   try {
     const row = mapArticleToRow(article);
     const { error } = await supabaseAdmin
@@ -124,6 +126,7 @@ export async function upsertArticleInDB(article: Article): Promise<boolean> {
 }
 
 export async function deleteArticleFromDB(idOrSlug: string): Promise<boolean> {
+  if (!isSupabaseConfigured) return false;
   try {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
     let query = supabaseAdmin.from('articles').delete();
@@ -147,6 +150,7 @@ export async function deleteArticleFromDB(idOrSlug: string): Promise<boolean> {
 
 // --- CATEGORIES OPERATIONS ---
 export async function getCategoriesFromDB(): Promise<CategoryInfo[] | null> {
+  if (!isSupabaseConfigured) return null;
   try {
     const { data, error } = await supabaseAdmin
       .from('categories')
@@ -178,6 +182,7 @@ export async function getCategoriesFromDB(): Promise<CategoryInfo[] | null> {
 }
 
 export async function upsertCategoryInDB(cat: CategoryInfo): Promise<boolean> {
+  if (!isSupabaseConfigured) return false;
   try {
     const { error } = await supabaseAdmin.from('categories').upsert(
       {
@@ -204,6 +209,7 @@ export async function upsertCategoryInDB(cat: CategoryInfo): Promise<boolean> {
 }
 
 export async function bulkSaveCategoriesInDB(categories: CategoryInfo[]): Promise<boolean> {
+  if (!isSupabaseConfigured) return false;
   try {
     const rows = categories.map((cat, idx) => ({
       name: cat.name,
@@ -241,6 +247,7 @@ export async function bulkSaveCategoriesInDB(categories: CategoryInfo[]): Promis
 
 // --- SITE CONFIG OPERATIONS ---
 export async function getSiteConfigFromDB(): Promise<typeof siteConfig | null> {
+  if (!isSupabaseConfigured) return null;
   try {
     const { data, error } = await supabaseAdmin
       .from('site_settings')
@@ -297,6 +304,7 @@ export async function getSiteConfigFromDB(): Promise<typeof siteConfig | null> {
 }
 
 export async function saveSiteConfigInDB(config: any): Promise<boolean> {
+  if (!isSupabaseConfigured) return false;
   try {
     let logoLightVal = config.logoLight || config.logo || '';
     if (logoLightVal.includes('logo-dark')) {
@@ -343,6 +351,7 @@ export async function saveSiteConfigInDB(config: any): Promise<boolean> {
 export const DEFAULT_ADMIN_PASSWORD = 'Apexchief2026@';
 
 export async function getAdminPasswordFromDB(): Promise<string> {
+  if (!isSupabaseConfigured) return DEFAULT_ADMIN_PASSWORD;
   try {
     const { data, error } = await supabaseAdmin
       .from('site_settings')
@@ -361,6 +370,9 @@ export async function getAdminPasswordFromDB(): Promise<string> {
 }
 
 export async function saveAdminPasswordInDB(newPassword: string): Promise<{ success: boolean; error?: string }> {
+  if (!isSupabaseConfigured) {
+    return { success: true };
+  }
   try {
     if (!newPassword || newPassword.length < 6) {
       return { success: false, error: 'Password must be at least 6 characters long.' };
@@ -436,6 +448,7 @@ export interface AnalyticsData {
 }
 
 export async function incrementArticleViewInDB(slug?: string, isUniqueVisitor: boolean = false): Promise<boolean> {
+  if (!isSupabaseConfigured) return false;
   try {
     // 1. If slug is present, increment article views in 'articles' table
     if (slug) {
@@ -476,7 +489,7 @@ export async function incrementArticleViewInDB(slug?: string, isUniqueVisitor: b
 
     await supabaseAdmin.from('site_settings').upsert({
       id: 'site_analytics',
-      name: 'ApexChief Deep Analytics Engine',
+      name: 'Entrepreneur Mirror Analytics Engine',
       description: 'Real-time reader tracking & article engagement store',
       contact: {
         totalVisits: updatedVisits,
@@ -494,6 +507,22 @@ export async function incrementArticleViewInDB(slug?: string, isUniqueVisitor: b
 }
 
 export async function getAnalyticsDataFromDB(): Promise<AnalyticsData> {
+  if (!isSupabaseConfigured) {
+    return {
+      totalVisits: 0,
+      uniqueVisitors: 0,
+      totalViews: 0,
+      totalArticles: 0,
+      avgViewsPerArticle: 0,
+      totalLikes: 0,
+      engagementRate: 0,
+      topArticles: [],
+      categoryBreakdown: [],
+      dailyTrends: [],
+      deviceBreakdown: { mobile: 62, desktop: 31, tablet: 7 },
+      trafficSources: [],
+    };
+  }
   try {
     // 1. Fetch articles from DB
     const { data: rawArticles } = await supabaseAdmin

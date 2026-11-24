@@ -1,24 +1,29 @@
 import { NextResponse } from 'next/server';
-import { getArticles, saveArticles } from '@/data/db';
+import { getArticles, getArticleSummaries, saveArticles } from '@/data/db';
 import { Article } from '@/types';
 import {
   getArticlesFromDB,
   upsertArticleInDB,
   deleteArticleFromDB,
 } from '@/lib/supabaseService';
+import { stripArticleForSummary } from '@/lib/articleSummary';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  // Try Supabase first
-  const dbArticles = await getArticlesFromDB();
-  if (dbArticles && dbArticles.length > 0) {
-    return NextResponse.json(dbArticles);
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const summaryOnly = searchParams.get('summary') === '1';
+
+  // Return local articles (populated with latest live scraped data)
+  const articles = summaryOnly ? getArticleSummaries() : getArticles();
+  if (articles && articles.length > 0) {
+    return NextResponse.json(articles);
   }
 
-  // Fallback to local files
-  const articles = getArticles();
-  return NextResponse.json(articles);
+  // Fallback to Supabase if local is empty
+  const dbArticles = await getArticlesFromDB();
+  const safeDb = dbArticles || [];
+  return NextResponse.json(summaryOnly ? safeDb.map(stripArticleForSummary) : safeDb);
 }
 
 export async function POST(request: Request) {

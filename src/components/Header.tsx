@@ -520,7 +520,7 @@ export default function Header({ initialConfig }: { initialConfig?: SiteConfig }
 
             <div className="pt-6 border-t border-gray-200 dark:border-white/10 flex items-center justify-between mt-6">
               <span className="text-xs font-mono uppercase text-gray-600 dark:text-gray-400">
-                ApexChief Media
+                {config.name} Media
               </span>
               <button
                 onClick={toggleDarkMode}

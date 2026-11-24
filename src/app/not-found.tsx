@@ -2,65 +2,66 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Newspaper, ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { CATEGORIES as INITIAL_CATEGORIES } from '@/data/categories';
+import { Category } from '@/types';
+import { SectionTitle } from '@/components/newsflash/NewsFlashPrimitives';
 
 export default function NotFound() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
 
   useEffect(() => {
     fetch('/api/categories')
-      .then((res) => {
-        if (!res.ok) return null;
-        return res.json();
-      })
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setCategories(data.filter((cat) => cat.isVisible !== false));
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload) => {
+        const list = Array.isArray(payload) ? payload : payload?.data;
+        if (Array.isArray(list) && list.length > 0) {
+          setCategories(list.filter((cat: Category) => cat.isVisible !== false));
         }
       })
       .catch(() => {});
   }, []);
+
   return (
-    <div className="py-16 sm:py-24 text-center max-w-2xl mx-auto">
-      <div className="inline-flex items-center space-x-2 bg-[#eff0e0] border border-[#211d1d]/20 px-3 py-1 rounded-full text-xs font-mono uppercase tracking-widest text-[#575757] mb-6">
-        <Newspaper className="w-3.5 h-3.5 text-[#f7413e]" />
-        <span>Edition Error 404</span>
+    <div className="nf-container py-16 sm:py-24 text-center max-w-2xl mx-auto">
+      <div className="mb-5 flex justify-center">
+        <SectionTitle title="Edition Error 404" highlight />
       </div>
 
-      <h1 className="font-serif text-5xl sm:text-7xl font-bold text-[#0a0a0a] tracking-tight mb-4">
+      <h1 className="nf-font-display text-[36px] sm:text-[54px] font-bold leading-[1.1] tracking-[-0.025em] text-[#020a1c] mb-4">
         Story Not Found
       </h1>
 
-      <p className="font-serif italic text-base sm:text-lg text-[#575757] leading-relaxed mb-8 max-w-xl mx-auto">
-        The requested editorial story or section dispatch could not be located in our current edition or digital archives.
+      <p className="text-[16px] leading-[1.6] text-[#657285] mb-8 max-w-xl mx-auto">
+        The requested dispatch or editorial section could not be located in the current Entrepreneur Mirror archives.
       </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+      <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
         <Link
           href="/"
-          className="bg-[#211d1d] hover:bg-[#f7413e] text-[#fefdf3] font-oswald text-xs font-bold uppercase tracking-widest px-6 py-3 rounded transition-all inline-flex items-center space-x-2"
+          className="bg-[#020a1c] hover:bg-[#cc0000] text-white text-[13px] font-medium px-6 h-10 rounded-md transition-colors inline-flex items-center gap-2 no-underline"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return To Front Page</span>
         </Link>
         <Link
           href="/news"
-          className="border border-[#211d1d] hover:bg-[#211d1d] hover:text-[#fefdf3] text-[#211d1d] font-oswald text-xs font-bold uppercase tracking-widest px-6 py-3 rounded transition-all inline-flex items-center space-x-2"
+          className="border border-[#cbd5e1] hover:border-[#020a1c] text-[#020a1c] text-[13px] font-medium px-6 h-10 rounded-md transition-colors inline-flex items-center gap-2 no-underline"
         >
           <span>Browse Editorial Archive</span>
         </Link>
       </div>
 
-      <div className="pt-8 border-t border-[#211d1d]/15">
-        <div className="text-xs font-mono uppercase font-bold text-[#575757] mb-3">
-          Popular Editorial Desks
+      <div className="pt-8 border-t border-[#cbd5e1]/45">
+        <div className="text-[12px] font-semibold uppercase tracking-wider text-[#657285] mb-4">
+          Browse Editorial Desks
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
-          {categories.map((cat) => (
+          {categories.slice(0, 14).map((cat) => (
             <Link
               key={cat.slug}
               href={`/category/${cat.slug}`}
-              className="text-xs bg-[#eff0e0] hover:bg-[#211d1d] hover:text-[#fefdf3] px-3 py-1.5 rounded transition-colors text-[#211d1d]"
+              className="text-[12px] font-medium bg-[#f7fafc] hover:bg-[#cc0000] hover:text-white border border-[#cbd5e1]/50 px-3 py-1.5 rounded-md transition-colors text-[#020a1c] no-underline"
             >
               {cat.name}
             </Link>

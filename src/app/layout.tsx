@@ -1,12 +1,13 @@
+import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Playfair_Display, Libre_Baskerville, Inter, Oswald, Bebas_Neue } from 'next/font/google';
 import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import SearchModal from '@/components/SearchModal';
+import './newsflash.css';
+import NavigationProgress from '@/components/newsflash/NavigationProgress';
+import NewsFlashHeader from '@/components/newsflash/NewsFlashHeader';
+import NewsFlashFooter from '@/components/newsflash/NewsFlashFooter';
 import Analytics from '@/components/Analytics';
 import MainWrapper from '@/components/MainWrapper';
-import WhatsAppFloatingWidget from '@/components/WhatsAppFloatingWidget';
 import FaviconManager from '@/components/FaviconManager';
 import { siteConfig } from '@/data/siteConfig';
 
@@ -44,34 +45,40 @@ const bebas = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.apexchief.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.entrepreneurmirror.com'),
   title: {
-    default: 'ApexChief | Business, Technology & Global News',
-    template: '%s | ApexChief',
+    default: 'Entrepreneur Mirror | Business, Technology, Interviews & World News',
+    template: '%s | Entrepreneur Mirror',
   },
   description:
-    'ApexChief is a digital media platform covering business, leadership, technology, startups, innovation, and emerging industry trends. We share insightful stories, expert perspectives, executive interviews, and inspiring success stories from leaders and entrepreneurs shaping the future.',
+    'Entrepreneur Mirror is a premier global media platform covering business strategies, technology breakthroughs, executive interviews, world news, lifestyle, metaverse, and market intelligence.',
   keywords: [
-    'ApexChief',
-    'Apex Chief',
+    'Entrepreneur Mirror',
     'Business',
-    'Leadership',
     'Technology',
     'Interview',
+    'News',
+    'World',
+    'Lifestyle',
+    'Opinion',
+    'Press Release',
+    'Metaverse',
+    'Crypto',
+    'Real Estate',
+    'Career',
+    'Health',
+    'Biography',
     'Executive Interviews',
-    'Startups',
-    'Innovation',
-    'Emerging Industry Trends',
     'Founder Stories',
     'CEOs',
     'Digital Media',
   ],
-  authors: [{ name: 'ApexChief Editorial Team', url: 'https://www.apexchief.com' }],
-  creator: 'ApexChief',
-  publisher: 'ApexChief',
-  applicationName: 'ApexChief',
+  authors: [{ name: 'Entrepreneur Mirror Editorial Team', url: 'https://www.entrepreneurmirror.com' }],
+  creator: 'Entrepreneur Mirror',
+  publisher: 'Entrepreneur Mirror',
+  applicationName: 'Entrepreneur Mirror',
   alternates: {
-    canonical: 'https://www.apexchief.com',
+    canonical: 'https://www.entrepreneurmirror.com',
   },
   icons: {
     icon: [
@@ -83,17 +90,17 @@ export const metadata: Metadata = {
     apple: '/apple-icon.png',
   },
   openGraph: {
-    title: 'ApexChief | Business, Technology & Global News',
+    title: 'Entrepreneur Mirror | Business, Technology, Interviews & World News',
     description:
-      'ApexChief is a digital media platform covering business, leadership, technology, startups, innovation, and emerging industry trends. We share insightful stories, expert perspectives, executive interviews, and inspiring success stories from leaders and entrepreneurs shaping the future.',
-    url: 'https://www.apexchief.com',
-    siteName: 'ApexChief',
+      'Entrepreneur Mirror is a premier global media platform covering business strategies, technology breakthroughs, executive interviews, world news, lifestyle, metaverse, and market intelligence.',
+    url: 'https://www.entrepreneurmirror.com',
+    siteName: 'Entrepreneur Mirror',
     images: [
       {
-        url: 'https://www.apexchief.com/images/apexchief-logo-light.png',
+        url: '/icon.png',
         width: 1200,
         height: 630,
-        alt: 'ApexChief | Business, Technology & Global News',
+        alt: 'Entrepreneur Mirror | Business, Technology, Interviews & World News',
       },
     ],
     locale: 'en_US',
@@ -101,12 +108,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ApexChief | Business, Technology & Global News',
+    title: 'Entrepreneur Mirror | Business, Technology, Interviews & World News',
     description:
-      'ApexChief is a digital media platform covering business, leadership, technology, startups, innovation, and emerging industry trends. We share insightful stories, expert perspectives, executive interviews, and inspiring success stories from leaders and entrepreneurs shaping the future.',
-    site: '@apexchief01',
-    creator: '@apexchief01',
-    images: ['https://www.apexchief.com/images/apexchief-logo-light.png'],
+      'Entrepreneur Mirror is a premier global media platform covering business strategies, technology breakthroughs, executive interviews, world news, lifestyle, metaverse, and market intelligence.',
+    site: '@entrepreneurmirror',
+    creator: '@entrepreneurmirror',
+    images: ['/icon.png'],
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || 't9na2oTjNEA-Mnwuiyo_dsyflp-do8ND3iAhF4KAMVY',
@@ -127,33 +134,23 @@ export const metadata: Metadata = {
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  '@id': 'https://www.apexchief.com/#organization',
-  name: 'ApexChief',
-  url: 'https://www.apexchief.com/',
-  logo: {
-    '@type': 'ImageObject',
-    url: 'https://www.apexchief.com/images/apexchief-logo-light.png',
-  },
+  '@id': 'https://www.entrepreneurmirror.com/#organization',
+  name: 'Entrepreneur Mirror',
+  url: 'https://www.entrepreneurmirror.com/',
   description:
-    'ApexChief delivers executive interviews, startup innovations, emerging tech breakthroughs, and market intelligence for modern leaders and entrepreneurs.',
-  sameAs: [
-    'https://x.com/apexchief01',
-    'https://linkedin.com/company/apexchief',
-    'https://facebook.com/ApexChief',
-    'https://www.instagram.com/apex.chief',
-  ],
+    'Entrepreneur Mirror delivers executive interviews, startup innovations, emerging tech breakthroughs, and market intelligence for modern leaders and entrepreneurs.',
 };
 
 const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  '@id': 'https://www.apexchief.com/#website',
-  url: 'https://www.apexchief.com/',
-  name: 'ApexChief',
+  '@id': 'https://www.entrepreneurmirror.com/#website',
+  url: 'https://www.entrepreneurmirror.com/',
+  name: 'Entrepreneur Mirror',
   description:
-    'Global Business, Technology & Leadership News. ApexChief delivers executive interviews, startup innovations, emerging tech breakthroughs, and market intelligence for modern leaders and entrepreneurs.',
+    'Global Business, Technology & Leadership News covering business, interviews, technology, real estate, and emerging markets.',
   publisher: {
-    '@id': 'https://www.apexchief.com/#organization',
+    '@id': 'https://www.entrepreneurmirror.com/#organization',
   },
   inLanguage: 'en',
 };
@@ -179,16 +176,18 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className="min-h-screen w-full max-w-full overflow-x-hidden bg-white dark:bg-[#121212] text-black dark:text-[#f8fafc] flex flex-col font-sans selection:bg-[#f7413e] selection:text-white transition-colors duration-200"
+        className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col nf-font-sans"
+        style={{ backgroundColor: 'var(--nf-bg)', color: 'var(--nf-ink)' }}
       >
-        <Header initialConfig={siteConfig} />
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
+        <NewsFlashHeader />
         <MainWrapper>
           {children}
         </MainWrapper>
-        <Footer initialConfig={siteConfig} />
-        <SearchModal />
+        <NewsFlashFooter />
         <Analytics />
-        <WhatsAppFloatingWidget />
         <FaviconManager />
       </body>
     </html>

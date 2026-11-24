@@ -1,0 +1,104 @@
+[
+  {
+    "id": 1460,
+    "name": "Biography",
+    "slug": "biography",
+    "count": 9
+  },
+  {
+    "id": 1300,
+    "name": "Business",
+    "slug": "business",
+    "count": 3624
+  },
+  {
+    "id": 1547,
+    "name": "career",
+    "slug": "career",
+    "count": 20
+  },
+  {
+    "id": 1539,
+    "name": "Crypto",
+    "slug": "crypto",
+    "count": 13
+  },
+  {
+    "id": 1563,
+    "name": "Entertainment",
+    "slug": "entertainment",
+    "count": 2
+  },
+  {
+    "id": 1313,
+    "name": "Health",
+    "slug": "health",
+    "count": 18
+  },
+  {
+    "id": 1304,
+    "name": "Interview",
+    "slug": "interview",
+    "count": 277
+  },
+  {
+    "id": 1306,
+    "name": "Lifestyle",
+    "slug": "lifestyle",
+    "count": 62
+  },
+  {
+    "id": 1337,
+    "name": "Metaverse",
+    "slug": "metaverse",
+    "count": 12
+  },
+  {
+    "id": 1305,
+    "name": "News",
+    "slug": "news",
+    "count": 3485
+  },
+  {
+    "id": 1302,
+    "name": "Opinion",
+    "slug": "opinion",
+    "count": 30
+  },
+  {
+    "id": 1303,
+    "name": "Press Release",
+    "slug": "press-release",
+    "count": 50
+  },
+  {
+    "id": 1687,
+    "name": "Real Estate",
+    "slug": "real-estate",
+    "count": 10
+  },
+  {
+    "id": 1374,
+    "name": "Sports",
+    "slug": "sports",
+    "count": 5
+  },
+  {
+    "id": 1301,
+    "name": "Technology",
+    "slug": "technology",
+    "count": 113
+  },
+  {
+    "id": 1,
+    "name": "Uncategorized",
+    "slug": "uncategorized",
+    "count": 38
+  },
+  {
+    "id": 1567,
+    "name": "world",
+    "slug": "world",
+    "count": 874
+  }
+]

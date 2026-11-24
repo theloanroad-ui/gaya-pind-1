@@ -1,0 +1,342 @@
+/* ==========================================================================
+   NEWSFLASH FRAMER DESIGN SYSTEM (Exact Token & Component Replication)
+   Ground: #ffffff | Surface: #f7fafc | Band: #e2e8f033
+   Ink: #020a1c | Muted: #657285 | Accent: #cc0000 | Hairline: #cbd5e1
+   ========================================================================== */
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("https://framerusercontent.com/third-party-assets/fontshare/wf/TTX2Z3BF3P6Y5BQT3IV2VNOK6FL22KUT/7QYRJOI3JIMYHGY6CH7SOIFRQLZOLNJ6/KFIAZD4RUMEZIYV6FQ3T3GP5PDBDB6JY.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("https://framerusercontent.com/third-party-assets/fontshare/wf/CDEBEFT2R7XKNGXSBBLZGMY4MMHZG75P/HEVKDGQCYDZ7Z6CDVR2ZQGBCTUD6ZARH/BKWEE3VKGTFABE37K2DTH625VUSN2N35.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter Display";
+  src: url("https://framerusercontent.com/assets/2uIBiALfCHVpWbHqRMZutfT7giU.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter Display";
+  src: url("https://framerusercontent.com/assets/RDJfWXA0aFdpD2OO2AJLBh2Z7E.woff2") format("woff2");
+  font-weight: 700 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Fragment Mono";
+  src: url("https://fonts.gstatic.com/s/fragmentmono/v6/4iCr6K5wfMRRjxp0DA6-2CLnB45HhrUI.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --nf-bg: #ffffff;
+  --nf-surface: #f7fafc;
+  --nf-band: rgba(226, 232, 240, 0.22);
+  --nf-ink: #020a1c;
+  --nf-muted: #657285;
+  --nf-red: #cc0000;
+  --nf-red-soft: rgba(204, 0, 0, 0.05);
+  --nf-red-border: rgba(204, 0, 0, 0.12);
+  --nf-divider: rgba(203, 213, 225, 0.45);
+  --nf-border: #cbd5e1;
+  --nf-card-border: rgba(226, 232, 240, 0.65);
+
+  --nf-font-sans: "Satoshi", var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --nf-font-display: "Satoshi", "Inter Display", var(--font-inter), sans-serif;
+  --nf-font-mono: "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --nf-ease-spring: cubic-bezier(0.25, 1, 0.5, 1);
+  --nf-ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html, body {
+  background-color: var(--nf-bg);
+  color: var(--nf-ink);
+  font-family: var(--nf-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Override utility font-serif/font-sans inside NewsFlash scope so Framer clarity rules apply */
+.nf-font-display {
+  font-family: var(--nf-font-display);
+}
+.nf-font-sans {
+  font-family: var(--nf-font-sans);
+}
+.nf-font-mono {
+  font-family: var(--nf-font-mono);
+}
+
+/* Container matching NewsFlash max-width: 1320px */
+.nf-container {
+  width: 100%;
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+@media (max-width: 809px) {
+  .nf-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* Header Fade Edges for Subnav Scroll */
+.nf-subnav-fade-left {
+  background: linear-gradient(270deg, rgba(255, 255, 255, 0) 0%, #ffffff 100%);
+  pointer-events: none;
+}
+.nf-subnav-fade-right {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #ffffff 100%);
+  pointer-events: none;
+}
+
+.nf-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.nf-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Card & Photo Hover Motion (Framer brightness + gentle scale + headline focus) */
+.nf-card {
+  transition: opacity 0.2s ease, transform 0.25s var(--nf-ease-smooth);
+}
+
+.nf-img-wrap {
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f1f5f9;
+  position: relative;
+}
+
+.nf-img-wrap img {
+  transition: transform 0.42s var(--nf-ease-smooth), filter 0.25s ease;
+  will-change: transform, filter;
+}
+
+.nf-card:hover .nf-img-wrap img,
+.nf-overlay-card:hover .nf-overlay-img {
+  transform: scale(1.03);
+  filter: brightness(0.9);
+}
+
+.nf-card-title {
+  color: var(--nf-ink);
+  transition: color 0.18s ease, opacity 0.18s ease;
+}
+
+.nf-card:hover .nf-card-title {
+  color: var(--nf-red);
+}
+
+/* Text-only list hover */
+.nf-text-link {
+  color: var(--nf-ink);
+  transition: color 0.18s ease, transform 0.2s var(--nf-ease-spring);
+}
+.nf-text-row:hover .nf-text-link {
+  color: var(--nf-red);
+}
+
+/* View All link + Chevron motion */
+.nf-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--nf-muted);
+  transition: color 0.18s ease;
+  white-space: nowrap;
+}
+.nf-view-all:hover {
+  color: var(--nf-ink);
+}
+.nf-view-all svg {
+  transition: transform 0.25s var(--nf-ease-spring);
+}
+.nf-view-all:hover svg {
+  transform: translateX(3px);
+}
+
+/* Overlay Gradient Card (Top Stories Hero, Health Hero, Business Hero, Podcast Showcase) */
+.nf-overlay-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #020a1c;
+}
+.nf-overlay-img {
+  transition: transform 0.5s var(--nf-ease-smooth), filter 0.3s ease;
+}
+.nf-overlay-mask {
+  background: linear-gradient(180deg, rgba(2, 10, 28, 0) 42%, rgba(2, 10, 28, 0.72) 74%, rgba(2, 10, 28, 0.94) 100%);
+  transition: background 0.25s ease;
+}
+.nf-overlay-card:hover .nf-overlay-mask {
+  background: linear-gradient(180deg, rgba(2, 10, 28, 0.05) 38%, rgba(2, 10, 28, 0.78) 72%, rgba(2, 10, 28, 0.97) 100%);
+}
+
+/* Category Highlight Badge (`Category Highlight` Framer variant) */
+.nf-badge-red {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background-color: var(--nf-red-soft);
+  border: 1px solid var(--nf-red-border);
+  backdrop-filter: blur(5px);
+  color: var(--nf-red);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Switcher Tab Animation */
+.nf-tab-btn {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.nf-tab-btn[data-active="false"]:hover {
+  background-color: rgba(203, 213, 225, 0.35);
+}
+
+/* Subtle section reveal */
+@keyframes nfFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nf-reveal {
+  animation: nfFadeInUp 0.45s var(--nf-ease-smooth) both;
+}
+
+/* Subnav link underline/hover */
+.nf-subnav-link {
+  transition: color 0.16s ease, opacity 0.16s ease;
+}
+.nf-subnav-link:hover {
+  color: var(--nf-red);
+}
+
+/* Footer input & button */
+.nf-footer-input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.nf-footer-input:focus {
+  outline: none;
+  border-color: var(--nf-red);
+  background: rgba(255, 255, 255, 0.12);
+}
+.nf-footer-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Article rich content styles matching NewsFlash editorial clean look */
+.nf-article-body {
+  color: rgba(2, 10, 28, 0.88);
+  font-family: var(--nf-font-sans);
+  font-size: 16px;
+  line-height: 1.75;
+}
+.nf-article-body p {
+  margin-bottom: 1.35rem;
+}
+.nf-article-body h2 {
+  font-size: 24px;
+  line-height: 1.28;
+  font-weight: 700;
+  color: var(--nf-ink);
+  margin-top: 2.25rem;
+  margin-bottom: 0.9rem;
+}
+.nf-article-body h3 {
+  font-size: 20px;
+  line-height: 1.32;
+  font-weight: 700;
+  color: var(--nf-ink);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+.nf-article-body ul, .nf-article-body ol {
+  margin-bottom: 1.35rem;
+  padding-left: 1.5rem;
+}
+.nf-article-body li {
+  margin-bottom: 0.45rem;
+}
+.nf-article-body a {
+  color: var(--nf-red);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.nf-article-body figure,
+.nf-article-body .wp-caption {
+  width: 100% !important;
+  max-width: 600px !important;
+  margin: 1.5rem auto !important;
+  display: block;
+}
+.nf-article-body figcaption,
+.nf-article-body .wp-caption-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--nf-muted);
+  text-align: center;
+  margin-top: 0.45rem;
+}
+.nf-article-body img {
+  display: block;
+  width: 100% !important;
+  max-width: 600px !important;
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+  object-fit: contain;
+  background-color: var(--nf-surface);
+  border: 1px solid rgba(203, 213, 225, 0.45);
+  border-radius: 8px;
+  margin: 1.25rem auto;
+}
+.nf-article-body figure img,
+.nf-article-body .wp-caption img {
+  margin: 0 auto;
+}
+.nf-article-body blockquote {
+  border-left: 3px solid var(--nf-red);
+  padding: 0.75rem 1.25rem;
+  background: var(--nf-surface);
+  color: var(--nf-ink);
+  margin: 1.5rem 0;
+  border-radius: 0 6px 6px 0;
+}
+

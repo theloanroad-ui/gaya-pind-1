@@ -1,5 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/article/:slug',
+        destination: '/news/:slug',
+      },
+      {
+        source: '/articles',
+        destination: '/news',
+      },
+    ];
+  },
   async redirects() {
     return [
       {
@@ -1409,11 +1421,27 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'images.unsplash.com',
       },
       {
-        protocol: 'http',
-        hostname: '**',
+        protocol: 'https',
+        hostname: 'ik.imagekit.io',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.apexchief.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'apexchief.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'entrepreneurmirror.com',
       },
     ],
   },

@@ -8,6 +8,8 @@ export interface Article {
   slug: string;
   title: string;
   category: string;
+  categories?: string[];
+  originalLink?: string;
   subcategory?: string;
   region?: string;
   contentType?: string;

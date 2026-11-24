@@ -1,14 +1,14 @@
 import ImageKit from 'imagekit';
 
-const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || 'public_AzVFBiMBL7qidkoKpbvbErgv8Hg=';
-const privateKey = process.env.IMAGEKIT_PRIVATE_KEY || 'private_n9XDywOfCJkiTaw6Im65vGKsbH4=';
-const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || 'https://ik.imagekit.io/2nle9znkn';
+const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || '';
+const privateKey = process.env.IMAGEKIT_PRIVATE_KEY || '';
+const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || '';
 
 // Initialize ImageKit server instance
 export const imagekit = new ImageKit({
-  publicKey,
-  privateKey,
-  urlEndpoint,
+  publicKey: publicKey || 'public_placeholder',
+  privateKey: privateKey || 'private_placeholder',
+  urlEndpoint: urlEndpoint || 'https://ik.imagekit.io/placeholder',
 });
 
 // Helper for client-side authentication signature
